@@ -4,20 +4,25 @@ import { prisma } from "@repo/database";
 import { getInstallationOctokit } from "./github";
 import { filterReviewableFiles, getFileContext } from "./context";
 import { reviewGraph } from "./graph/review.graph";
+import { buildReviewSummary } from "./agents/summary.agent";
+import type { Finding } from "./llm";
 
-const connection = process.env.REDIS_URL
-  ? { url: process.env.REDIS_URL }
-  : { host: "127.0.0.1", port: 6379 };
+const connection = { url: process.env.REDIS_URL! };
+
+function buildCommentBody(finding: Finding): string {
+  const parts = [`**[${finding.severity.toUpperCase()} · ${finding.category}]** ${finding.message}`];
+  if (finding.currentCode) parts.push(`\n\`\`\`\n${finding.currentCode}\n\`\`\``);
+  if (finding.suggestion) parts.push(`\n**Suggested fix:**\n\`\`\`\n${finding.suggestion}\n\`\`\``);
+  return parts.join("\n");
+}
 
 const worker = new Worker(
   "pr-review",
   async (job) => {
-    const { sessionId, installationId, owner, repo, pullNumber, commitSha } = job.data;
+    const startedAt = Date.now();
+    const { sessionId, installationId, owner, repo, pullNumber, commitSha, prTitle } = job.data;
 
-    await prisma.reviewSession.update({
-      where: { id: sessionId },
-      data: { status: "RUNNING" },
-    });
+    await prisma.reviewSession.update({ where: { id: sessionId }, data: { status: "RUNNING" } });
 
     const octokit = await getInstallationOctokit(installationId);
 
@@ -27,81 +32,96 @@ const worker = new Worker(
     );
 
     const files = filterReviewableFiles(rawFiles);
-
-    let totalFindings = 0;
+    const allFindings: Finding[] = [];
 
     for (const file of files) {
-      if (!file.patch) continue; // binary or too large — GitHub omits patch
-
+      if (!file.patch) continue;
       const fileContent = await getFileContext(octokit, owner, repo, file.filename, commitSha);
+      const result = await reviewGraph.invoke({ filename: file.filename, patch: file.patch, fileContent });
+      allFindings.push(...result.allFindings);
+    }
 
-      const result = await reviewGraph.invoke({
-        filename: file.filename,
-        patch: file.patch,
-        fileContent,
-      });
+    const durationSeconds = (Date.now() - startedAt) / 1000;
 
-      for (const finding of result.allFindings) {
-        let githubCommentId: bigint | undefined;
+    const { body: summaryBody, hasBlocking } = await buildReviewSummary(allFindings, {
+      prTitle: prTitle ?? `PR #${pullNumber}`,
+      owner,
+      repo,
+      pullNumber,
+      changedFiles: files.map((f) => f.filename),
+      durationSeconds,
+    });
 
-        try {
-          const { data } = await octokit.request(
-            "POST /repos/{owner}/{repo}/pulls/{pull_number}/comments",
-            {
-              owner,
-              repo,
-              pull_number: pullNumber,
-              commit_id: commitSha,
-              path: finding.file,
-              line: finding.line,
-              side: "RIGHT",
-              body: `**[${finding.severity.toUpperCase()} \u00b7 ${finding.category}]** ${finding.message}`,
-            }
-          );
-          githubCommentId = BigInt(data.id);
-        } catch (err: any) {
-          // GitHub rejects comments on lines outside the diff hunk — log and
-          // move on instead of failing the whole job.
-          console.error(`Failed to post comment on ${finding.file}:${finding.line}`, err.message);
-        }
+    const commentRecords: { finding: Finding; githubCommentId?: number | bigint }[] = [];
 
-        await prisma.reviewComment.create({
-          data: {
-            sessionId,
-            file: finding.file,
+    for (const finding of allFindings) {
+      let githubCommentId: number | bigint | undefined;
+      try {
+        const { data } = await octokit.request(
+          "POST /repos/{owner}/{repo}/pulls/{pull_number}/comments",
+          {
+            owner,
+            repo,
+            pull_number: pullNumber,
+            commit_id: commitSha,
+            path: finding.file,
             line: finding.line,
-            severity: finding.severity,
-            category: finding.category,
-            message: finding.message,
-            githubCommentId,
-          },
-        });
-
-        totalFindings += 1;
+            side: "RIGHT",
+            body: buildCommentBody(finding),
+          }
+        );
+        githubCommentId = data.id;
+      } catch (err: any) {
+        console.error(`Failed to post comment on ${finding.file}:${finding.line}`, err.message);
       }
+      commentRecords.push({ finding, githubCommentId });
+    }
+
+    try {
+      const event = hasBlocking ? "REQUEST_CHANGES" : allFindings.length === 0 ? "APPROVE" : "COMMENT";
+      await octokit.request("POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews", {
+        owner,
+        repo,
+        pull_number: pullNumber,
+        commit_id: commitSha,
+        body: summaryBody,
+        event,
+      });
+    } catch (err: any) {
+      console.error(`Failed to post review summary for PR #${pullNumber}`, err.message);
+    }
+
+    for (const { finding, githubCommentId } of commentRecords) {
+      await prisma.reviewComment.create({
+        data: {
+          sessionId,
+          file: finding.file,
+          line: finding.line,
+          severity: finding.severity,
+          category: finding.category,
+          message: finding.message,
+          currentCode: finding.currentCode ?? null,
+          suggestion: finding.suggestion ?? null,
+          blocking: Boolean(finding.blocking),
+          githubCommentId: githubCommentId ? BigInt(githubCommentId) : undefined,
+        },
+      });
     }
 
     await prisma.reviewSession.update({
       where: { id: sessionId },
-      data: { status: "COMPLETED" },
+      data: { status: "COMPLETED", summary: summaryBody },
     });
 
-    console.log(`PR #${pullNumber} (${owner}/${repo}): posted ${totalFindings} findings`);
+    console.log(`PR #${pullNumber} (${owner}/${repo}): posted ${allFindings.length} findings + summary in ${durationSeconds.toFixed(1)}s`);
   },
   { connection }
 );
 
-worker.on("error", (error) => {
-  console.error("Redis queue error:", error.message);
-});
-
 worker.on("failed", async (job, err) => {
   console.error(`Job ${job?.id} failed:`, err.message);
   if (job?.data?.sessionId) {
-    await prisma.reviewSession.update({
-      where: { id: job.data.sessionId },
-      data: { status: "FAILED" },
-    });
+    await prisma.reviewSession.update({ where: { id: job.data.sessionId }, data: { status: "FAILED" } });
   }
 });
 

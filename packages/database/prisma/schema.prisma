@@ -16,22 +16,24 @@ model Installation {
 }
 
 model ReviewSession {
-  id            String   @id @default(uuid())
-  installation  Installation @relation(fields: [installationId], references: [id])
+  id             String          @id @default(uuid())
+  installation   Installation    @relation(fields: [installationId], references: [id])
   installationId String
-  owner         String
-  repo          String
-  pullNumber    Int
-  commitSha     String
-  status        String   @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
-  createdAt     DateTime @default(now())
-  comments      ReviewComment[]
+  owner          String
+  repo           String
+  pullNumber     Int
+  commitSha      String
+  status         String          @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
+  summary        String?         // synthesized review verdict from the 4th LLM call
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  comments       ReviewComment[]
 
-  @@unique([owner, repo, pullNumber, commitSha]) // dedup: same commit won't be reviewed twice
+  @@unique([owner, repo, pullNumber, commitSha])
 }
 
 model ReviewComment {
-  id              String   @id @default(uuid())
+  id              String        @id @default(uuid())
   session         ReviewSession @relation(fields: [sessionId], references: [id])
   sessionId       String
   file            String
@@ -39,6 +41,9 @@ model ReviewComment {
   severity        String
   category        String
   message         String
+  currentCode     String?       // the exact flagged line(s), for display in the dashboard
+  suggestion      String?       // the agent's proposed fix, as code
+  blocking        Boolean       @default(false)
   githubCommentId BigInt?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime      @default(now())
 }

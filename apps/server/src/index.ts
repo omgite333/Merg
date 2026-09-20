@@ -13,16 +13,19 @@ const webhooks = new Webhooks({
 });
 
 app.use(cors());
-app.use("/api", apiRouter);
 
-// capture raw body — signature verification needs the exact bytes GitHub sent
-app.use(
+app.use(   // capture raw body — signature verification needs the exact bytes GitHub sent
   express.json({
     verify: (req: any, _res, buf) => {
       req.rawBody = buf.toString();
     },
   })
 );
+
+app.use("/api", apiRouter);
+
+
+
 
 app.post("/webhook", async (req, res) => {
   const signature = req.headers["x-hub-signature-256"] as string;
@@ -76,6 +79,7 @@ if (event === "pull_request" && ["opened", "synchronize"].includes(action)) {
     repo: repository.name,
     pullNumber: pull_request.number,
     commitSha: pull_request.head.sha,
+    prTitle: pull_request.title,
   });
 
   console.log(`Queued review ${session.id} for PR #${pull_request.number}`);

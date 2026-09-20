@@ -18,14 +18,8 @@ const graph = new StateGraph(ReviewState)
     performanceFindings: await performanceAgent(state.filename, state.patch, state.fileContent),
   }))
   .addNode("merge", async (state) => {
-    const all = [
-      ...state.codeFindings,
-      ...state.securityFindings,
-      ...state.performanceFindings,
-    ];
+    const all = [...state.codeFindings, ...state.securityFindings, ...state.performanceFindings];
 
-    // Group findings that land on the same file+line so we post one
-    // comment per line instead of one per agent.
     const byLine = new Map<string, Finding[]>();
     for (const f of all) {
       const key = `${f.file}:${f.line}`;
@@ -43,16 +37,15 @@ const graph = new StateGraph(ReviewState)
       return {
         ...worst,
         message: group.map((g) => `[${g.category}] ${g.message}`).join("\n"),
+        blocking: group.some((g) => g.blocking),
       };
     });
 
     return { allFindings: merged };
   })
-  // Fan-out: all three agents run concurrently from START.
   .addEdge(START, "codeReview")
   .addEdge(START, "securityReview")
   .addEdge(START, "performanceReview")
-  // Fan-in: merge waits for all three to finish.
   .addEdge("codeReview", "merge")
   .addEdge("securityReview", "merge")
   .addEdge("performanceReview", "merge")

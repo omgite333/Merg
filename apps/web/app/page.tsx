@@ -15,7 +15,7 @@ export default function LandingPage() {
       <Suspense>
         <InstallationRedirect />
       </Suspense>
-      <div className="mx-auto max-w-[1000px] border-x border-[#e9e9e9] dark:border-white/10">
+      <div className="mx-auto max-w-[1000px]">
         <SiteHeader />
         <HeroSection />
         <FeaturesGrid />

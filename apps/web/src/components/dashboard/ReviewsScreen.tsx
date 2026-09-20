@@ -13,7 +13,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { getDashboard, getReviews } from "@/lib/api";
 import { formatDateTime, formatRelativeTime, githubPullRequestUrl } from "@/lib/dashboard";
-import type { DashboardResponse, ReviewStatus, ReviewsResponse } from "@/types/dashboard";
+import type { DashboardResponse, Repository, ReviewStatus, ReviewsResponse } from "@/types/dashboard";
 import { DashboardIcon, DashboardLoading, EmptyPanel, StatusBadge } from "./DashboardPrimitives";
 
 const reviewStatuses: Array<{ value: "ALL" | ReviewStatus; label: string }> = [
@@ -80,7 +80,18 @@ export function ReviewsScreen() {
   }, [page]);
 
   const repositories = useMemo(
-    () => dashboardData?.installations.flatMap((installation) => installation.repositories) ?? [],
+    () =>
+      Array.from(
+        (dashboardData?.installations ?? [])
+          .flatMap((installation) => installation.repositories)
+          .reduce((map, repository) => {
+            if (!map.has(repository.id)) {
+              map.set(repository.id, { ...repository, recentReviews: [...repository.recentReviews] });
+            }
+            return map;
+          }, new Map<string, Repository>())
+          .values()
+      ),
     [dashboardData]
   );
 

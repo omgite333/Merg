@@ -15,7 +15,7 @@ import {
 import { getDashboard } from "@/lib/api";
 import { formatRelativeTime, githubPullRequestUrl } from "@/lib/dashboard";
 import { GITHUB_APP_INSTALL_URL } from "@/routes/apiRoute";
-import type { DashboardResponse } from "@/types/dashboard";
+import type { DashboardResponse, Repository } from "@/types/dashboard";
 import { DashboardIcon, DashboardLoading, EmptyPanel, MetricCard, StatusBadge } from "./DashboardPrimitives";
 
 export function DashboardOverview() {
@@ -68,7 +68,25 @@ export function DashboardOverview() {
 
   const workspace = useMemo(() => {
     const installations = data?.installations ?? [];
-    const repositories = installations.flatMap((installation) => installation.repositories);
+
+    const repositories = Array.from(
+      installations
+        .flatMap((installation) => installation.repositories)
+        .reduce((map, repository) => {
+          const existing = map.get(repository.id);
+          if (existing) {
+            existing.recentReviews.push(...repository.recentReviews);
+            existing.recentReviews.sort(
+              (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+            );
+          } else {
+            map.set(repository.id, { ...repository, recentReviews: [...repository.recentReviews] });
+          }
+          return map;
+        }, new Map<string, Repository>())
+        .values()
+    );
+
     const recentReviews = repositories
       .flatMap((repository) => repository.recentReviews.map((review) => ({ review, repository })))
       .sort((left, right) => new Date(right.review.createdAt).getTime() - new Date(left.review.createdAt).getTime());
