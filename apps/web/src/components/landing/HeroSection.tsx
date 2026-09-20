@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
-import { DemoVideo } from "./DemoVideo";
 import { InstallButton } from "./InstallButton";
 
 export function HeroSection() {
@@ -34,10 +33,6 @@ export function HeroSection() {
         >
           See how it works
         </Link>
-      </div>
-
-      <div id="demo" className="mx-auto mt-20 max-w-[820px] overflow-hidden rounded-[24px] border border-[#dcdcd8] bg-[#fafaf8] shadow-[0_15px_40px_rgba(23,23,23,0.035)] dark:border-white/10 dark:bg-[#101015]">
-        <DemoVideo />
       </div>
     </section>
   );

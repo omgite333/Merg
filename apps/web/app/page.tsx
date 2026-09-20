@@ -3,7 +3,6 @@ import { SiteHeader } from "@/components/landing/SiteHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturesGrid } from "@/components/landing/FeaturesGrid";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
-import { ReviewShowcase } from "@/components/landing/ReviewShowcase";
 import { CompetitorsSection } from "@/components/landing/CompetitorsSection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { InstallCtaSection } from "@/components/landing/InstallCtaSection";
@@ -21,7 +20,6 @@ export default function LandingPage() {
         <HeroSection />
         <FeaturesGrid />
         <FeaturesSection />
-        <ReviewShowcase />
         <CompetitorsSection />
         <FAQSection />
         <InstallCtaSection />
