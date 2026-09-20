@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Installation {
+  id             String   @id @default(uuid())
+  githubInstallId Int     @unique
+  account        String
+  createdAt      DateTime @default(now())
+  reviews        ReviewSession[]
+}
+
+model ReviewSession {
+  id            String   @id @default(uuid())
+  installation  Installation @relation(fields: [installationId], references: [id])
+  installationId String
+  owner         String
+  repo          String
+  pullNumber    Int
+  commitSha     String
+  status        String   @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
+  createdAt     DateTime @default(now())
+  comments      ReviewComment[]
+
+  @@unique([owner, repo, pullNumber, commitSha]) // dedup: same commit won't be reviewed twice
+}
+
+model ReviewComment {
+  id              String   @id @default(uuid())
+  session         ReviewSession @relation(fields: [sessionId], references: [id])
+  sessionId       String
+  file            String
+  line            Int
+  severity        String
+  category        String
+  message         String
+  githubCommentId BigInt?
+  createdAt       DateTime @default(now())
+}
