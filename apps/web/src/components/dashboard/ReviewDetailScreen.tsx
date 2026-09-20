@@ -104,8 +104,8 @@ export function ReviewDetailScreen({ reviewId }: { reviewId: string }) {
   return (
     <div className="space-y-7">
       <div className="flex items-center justify-between gap-4">
-        <Link href="/dashboard/reviews" className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#686863] transition-colors hover:text-[#2764d8]"><DashboardIcon icon={ArrowLeft01Icon} size={14} aria-hidden="true" />Back to reviews</Link>
-        <button onClick={() => void loadReview(true)} type="button" disabled={refreshing} className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-[#ddddD7] bg-white px-3.5 text-[12px] font-semibold text-[#4b4b46] transition-colors hover:border-[#bfbfb8] hover:bg-[#f7f7f4] disabled:cursor-not-allowed disabled:opacity-60">
+        <Link href="/dashboard/reviews" className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#686863] dark:text-[#c2c2c9] transition-colors hover:text-[#2764d8]"><DashboardIcon icon={ArrowLeft01Icon} size={14} aria-hidden="true" />Back to reviews</Link>
+        <button onClick={() => void loadReview(true)} type="button" disabled={refreshing} className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-[#ddddD7] bg-white dark:border-white/10 dark:bg-[#14141a] px-3.5 text-[12px] font-semibold text-[#4b4b46] dark:text-[#d3d3d5] transition-colors hover:border-[#bfbfb8] hover:bg-[#f7f7f4] dark:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60">
           <DashboardIcon icon={Refresh01Icon} size={14} className={refreshing ? "animate-spin" : undefined} aria-hidden="true" />
           Refresh
         </button>
@@ -113,15 +113,15 @@ export function ReviewDetailScreen({ reviewId }: { reviewId: string }) {
 
       {error ? <div className="rounded-2xl border border-[#f2d1d1] bg-[#fff6f6] px-4 py-3 text-[13px] text-[#a53d3d]">Showing your last loaded review. Refresh failed: {error}</div> : null}
 
-      <section className="rounded-2xl border border-[#e5e5e0] bg-white p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)] sm:p-7">
+      <section className="rounded-2xl border border-[#e5e5e0] bg-white dark:border-white/10 dark:bg-[#14141a] p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)] sm:p-7">
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
           <div className="min-w-0">
             <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#2764d8]">Review detail</p>
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-              <h1 className="truncate text-[28px] font-semibold leading-none tracking-[-0.06em] text-[#20201e] sm:text-[36px]">{review.repository.fullName}</h1>
-              <span className="text-[18px] font-medium text-[#8b8b85]">PR #{review.prNumber}</span>
+              <h1 className="truncate text-[28px] font-semibold leading-none tracking-[-0.06em] text-[#20201e] dark:text-white sm:text-[36px]">{review.repository.fullName}</h1>
+              <span className="text-[18px] font-medium text-[#8b8b85] dark:text-[#b8b8c0]">PR #{review.prNumber}</span>
             </div>
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-[#777771]">
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-[#777771] dark:text-[#a1a1aa]">
               <span className="inline-flex items-center gap-1.5"><DashboardIcon icon={HashIcon} size={14} aria-hidden="true" />{review.headSha ? review.headSha.slice(0, 8) : "Commit unavailable"}</span>
               <span>Base branch: {review.baseBranch}</span>
               <span>Started {formatDateTime(review.createdAt)}</span>
@@ -158,26 +158,26 @@ export function ReviewDetailScreen({ reviewId }: { reviewId: string }) {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.7fr)]">
-        <section className="rounded-2xl border border-[#e5e5e0] bg-white p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)] sm:p-6">
+        <section className="rounded-2xl border border-[#e5e5e0] bg-white dark:border-white/10 dark:bg-[#14141a] p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)] sm:p-6">
           <div className="flex items-center gap-3">
             <span className="grid size-9 place-items-center rounded-xl bg-[#f0f4ff] text-[#2764d8]"><DashboardIcon icon={SparklesIcon} size={16} aria-hidden="true" /></span>
-            <div><h2 className="text-[15px] font-semibold tracking-[-0.025em]">Merg summary</h2><p className="mt-0.5 text-[12px] text-[#85857f]">The review summary posted to the pull request.</p></div>
+            <div><h2 className="text-[15px] font-semibold tracking-[-0.025em]">Merg summary</h2><p className="mt-0.5 text-[12px] text-[#85857f] dark:text-[#9a9aa3]">The review summary posted to the pull request.</p></div>
           </div>
-          <div className="mt-5 rounded-xl bg-[#fafaf7] px-4 py-4 text-[13px] leading-6 text-[#5c5c56] whitespace-pre-wrap">
+          <div className="mt-5 rounded-xl bg-[#fafaf7] px-4 py-4 text-[13px] leading-6 text-[#5c5c56] dark:bg-[#16161d] dark:text-[#c2c2c9] whitespace-pre-wrap">
             {review.summary ?? (activeReview ? "Merg is preparing the final summary." : "No review summary was recorded for this session.")}
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#e5e5e0] bg-white p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)] sm:p-6">
+        <section className="rounded-2xl border border-[#e5e5e0] bg-white dark:border-white/10 dark:bg-[#14141a] p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)] sm:p-6">
           <h2 className="text-[15px] font-semibold tracking-[-0.025em]">Findings by severity</h2>
-          <p className="mt-1 text-[12px] text-[#85857f]">Only findings stored for this review are counted.</p>
+          <p className="mt-1 text-[12px] text-[#85857f] dark:text-[#9a9aa3]">Only findings stored for this review are counted.</p>
           <div className="mt-5 space-y-3">
             {severityOrder.map((severity) => {
               const count = severityCounts.get(severity) ?? 0;
               return (
                 <div key={severity} className="flex items-center justify-between gap-3">
                   <SeverityBadge severity={severity} />
-                  <span className="text-[13px] font-semibold text-[#41413c]">{count}</span>
+                  <span className="text-[13px] font-semibold text-[#41413c] dark:text-[#d3d3d5]">{count}</span>
                 </div>
               );
             })}
@@ -185,33 +185,33 @@ export function ReviewDetailScreen({ reviewId }: { reviewId: string }) {
         </section>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-[#e5e5e0] bg-white shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
+      <section className="overflow-hidden rounded-2xl border border-[#e5e5e0] bg-white dark:border-white/10 dark:bg-[#14141a] shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
         <div className="border-b border-[#ecece7] px-5 py-4 sm:px-6">
           <h2 className="text-[15px] font-semibold tracking-[-0.025em]">Review findings</h2>
-          <p className="mt-1 text-[12px] text-[#83837d]">Each item links back to the pull request where Merg left the inline feedback.</p>
+          <p className="mt-1 text-[12px] text-[#83837d] dark:text-[#b8b8c0]">Each item links back to the pull request where Merg left the inline feedback.</p>
         </div>
         {review.comments.length ? (
-          <div className="divide-y divide-[#efefeb]">
+          <div className="divide-y divide-[#efefeb] dark:divide-white/10">
             {review.comments.map((comment) => (
               <article key={comment.id} className="px-5 py-5 sm:px-6">
                 <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                   <div className="flex min-w-0 items-center gap-2">
-                    <DashboardIcon icon={FileCodeIcon} size={16} className="shrink-0 text-[#70706b]" aria-hidden="true" />
-                    <p className="truncate font-mono text-[12px] text-[#3e3e39]">{comment.filePath}:{comment.line}</p>
+                    <DashboardIcon icon={FileCodeIcon} size={16} className="shrink-0 text-[#70706b] dark:text-[#c2c2c9]" aria-hidden="true" />
+                    <p className="truncate font-mono text-[12px] text-[#3e3e39] dark:text-[#d3d3d5]">{comment.filePath}:{comment.line}</p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2"><SeverityBadge severity={comment.severity} /><span className="rounded-full bg-[#f3f3ef] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#75756f]">{comment.category}</span></div>
+                  <div className="flex shrink-0 items-center gap-2"><SeverityBadge severity={comment.severity} /><span className="rounded-full bg-[#f3f3ef] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#75756f] dark:text-[#c2c2c9]">{comment.category}</span></div>
                 </div>
-                {comment.title ? <h3 className="mt-4 text-[14px] font-semibold tracking-[-0.015em] text-[#33332f]">{comment.title}</h3> : null}
-                <p className="mt-2 whitespace-pre-wrap text-[13px] leading-6 text-[#666660]">{comment.body}</p>
+                {comment.title ? <h3 className="mt-4 text-[14px] font-semibold tracking-[-0.015em] text-[#33332f] dark:text-[#e2e2e1]">{comment.title}</h3> : null}
+                <p className="mt-2 whitespace-pre-wrap text-[13px] leading-6 text-[#666660] dark:text-[#c2c2c9]">{comment.body}</p>
                 {comment.suggestion ? <div className="mt-4 rounded-xl border border-[#dceadd] bg-[#f4fbf5] px-3.5 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#258051]">Suggested direction</p><p className="mt-1.5 whitespace-pre-wrap font-mono text-[12px] leading-5 text-[#4a6653]">{comment.suggestion}</p></div> : null}
               </article>
             ))}
           </div>
         ) : (
           <div className="px-6 py-14 text-center">
-            <DashboardIcon icon={GitPullRequestIcon} size={20} className="mx-auto text-[#a3a39d]" aria-hidden="true" />
-            <p className="mt-3 text-[13px] font-medium text-[#4d4d48]">No inline findings were recorded.</p>
-            <p className="mt-1 text-[12px] leading-5 text-[#898983]">{activeReview ? "Findings will appear here when the review completes." : "Open the pull request on GitHub to view the final review comment."}</p>
+            <DashboardIcon icon={GitPullRequestIcon} size={20} className="mx-auto text-[#a3a39d] dark:text-[#a9a9b1]" aria-hidden="true" />
+            <p className="mt-3 text-[13px] font-medium text-[#4d4d48] dark:text-[#d3d3d5]">No inline findings were recorded.</p>
+            <p className="mt-1 text-[12px] leading-5 text-[#898983] dark:text-[#b8b8c0]">{activeReview ? "Findings will appear here when the review completes." : "Open the pull request on GitHub to view the final review comment."}</p>
           </div>
         )}
       </section>

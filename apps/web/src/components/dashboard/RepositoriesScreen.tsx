@@ -82,8 +82,8 @@ export function RepositoriesScreen() {
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#2764d8]">Repository controls</p>
-          <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-[-0.06em] text-[#20201e] sm:text-[38px]">Choose where Merg reviews.</h1>
-          <p className="mt-3 max-w-xl text-[14px] leading-6 text-[#73736e]">Add repositories through the GitHub App, then track the reviews they have received.</p>
+          <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-[-0.06em] text-[#20201e] dark:text-white sm:text-[38px]">Choose where Merg reviews.</h1>
+          <p className="mt-3 max-w-xl text-[14px] leading-6 text-[#73736e] dark:text-[#a1a1aa]">Add repositories through the GitHub App, then track the reviews they have received.</p>
         </div>
         <a href={GITHUB_APP_INSTALL_URL} target="_blank" rel="noreferrer" className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-[#20201e] px-4 text-[12px] font-semibold text-white transition-colors hover:bg-[#343430]">
           <DashboardIcon icon={GitBranchIcon} size={14} aria-hidden="true" />
@@ -96,33 +96,33 @@ export function RepositoriesScreen() {
       {installations.length ? (
         <div className="space-y-5">
           {installations.map((installation) => (
-            <section key={installation.id} className="overflow-hidden rounded-2xl border border-[#e5e5e0] bg-white shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
+            <section key={installation.id} className="overflow-hidden rounded-2xl border border-[#e5e5e0] bg-white dark:border-white/10 dark:bg-[#14141a] shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
               <div className="flex flex-col gap-4 border-b border-[#ecece7] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div className="flex items-start gap-3">
                   <span className="grid size-10 place-items-center rounded-xl bg-[#edf3ff] text-[#2764d8]"><DashboardIcon icon={GitBranchIcon} size={19} aria-hidden="true" /></span>
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-[15px] font-semibold tracking-[-0.025em] text-[#30302c]">{installation.githubAccountLogin}</h2>
+                      <h2 className="text-[15px] font-semibold tracking-[-0.025em] text-[#30302c] dark:text-[#f0f0ef]">{installation.githubAccountLogin}</h2>
                       <span className="rounded-full border border-[#c6ead4] bg-[#edf9f1] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#167541]">{installation.status.toLowerCase()}</span>
                     </div>
-                    <p className="mt-1 text-[12px] text-[#85857f]">{installation.githubAccountType} account · {installation.repositories.length} reviewed {installation.repositories.length === 1 ? "repository" : "repositories"}</p>
+                    <p className="mt-1 text-[12px] text-[#85857f] dark:text-[#9a9aa3]">{installation.githubAccountType} account · {installation.repositories.length} reviewed {installation.repositories.length === 1 ? "repository" : "repositories"}</p>
                   </div>
                 </div>
-                <button onClick={() => void loadDashboard(true)} type="button" disabled={refreshing} className="inline-flex h-9 items-center justify-center gap-2 self-start rounded-full border border-[#ddddD7] bg-white px-3.5 text-[12px] font-semibold text-[#4b4b46] transition-colors hover:border-[#bfbfb8] hover:bg-[#f7f7f4] disabled:cursor-not-allowed disabled:opacity-60 sm:self-auto">
+                <button onClick={() => void loadDashboard(true)} type="button" disabled={refreshing} className="inline-flex h-9 items-center justify-center gap-2 self-start rounded-full border border-[#ddddD7] bg-white dark:border-white/10 dark:bg-[#14141a] px-3.5 text-[12px] font-semibold text-[#4b4b46] dark:text-[#d3d3d5] transition-colors hover:border-[#bfbfb8] hover:bg-[#f7f7f4] dark:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60 sm:self-auto">
                   <DashboardIcon icon={Refresh01Icon} size={14} className={refreshing ? "animate-spin" : undefined} aria-hidden="true" />
                   Refresh
                 </button>
               </div>
 
               {installation.repositories.length ? (
-                <div className="divide-y divide-[#efefeb]">
+                <div className="divide-y divide-[#efefeb] dark:divide-white/10">
                   {installation.repositories.map((repository) => (
-                    <article key={repository.id} className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-[#fcfcfa] sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <article key={repository.id} className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-[#fcfcfa] dark:bg-[#101016] dark:hover:bg-white/5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                       <div className="flex min-w-0 items-start gap-3">
-                        <DashboardIcon icon={GitForkIcon} size={16} className="mt-0.5 shrink-0 text-[#70706b]" aria-hidden="true" />
+                        <DashboardIcon icon={GitForkIcon} size={16} className="mt-0.5 shrink-0 text-[#70706b] dark:text-[#c2c2c9]" aria-hidden="true" />
                         <div className="min-w-0">
-                          <a href={`https://github.com/${repository.fullName}`} target="_blank" rel="noreferrer" className="block truncate text-[13px] font-semibold text-[#33332f] hover:text-[#2764d8]">{repository.fullName}</a>
-                          <p className="mt-1 text-[12px] text-[#85857f]">{repository.recentReviews.length} {repository.recentReviews.length === 1 ? "review" : "reviews"}</p>
+                          <a href={`https://github.com/${repository.fullName}`} target="_blank" rel="noreferrer" className="block truncate text-[13px] font-semibold text-[#33332f] dark:text-[#e2e2e1] hover:text-[#2764d8]">{repository.fullName}</a>
+                          <p className="mt-1 text-[12px] text-[#85857f] dark:text-[#9a9aa3]">{repository.recentReviews.length} {repository.recentReviews.length === 1 ? "review" : "reviews"}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 pl-6 sm:pl-0">
@@ -135,9 +135,9 @@ export function RepositoriesScreen() {
                 </div>
               ) : (
                 <div className="px-6 py-12 text-center">
-                  <DashboardIcon icon={GitPullRequestIcon} size={20} className="mx-auto text-[#a3a39d]" aria-hidden="true" />
-                  <p className="mt-3 text-[13px] font-medium text-[#4d4d48]">No reviews have run yet for this installation.</p>
-                  <p className="mt-1 text-[12px] text-[#898983]">Open a pull request in a repository granted to the GitHub App.</p>
+                  <DashboardIcon icon={GitPullRequestIcon} size={20} className="mx-auto text-[#a3a39d] dark:text-[#a9a9b1]" aria-hidden="true" />
+                  <p className="mt-3 text-[13px] font-medium text-[#4d4d48] dark:text-[#d3d3d5]">No reviews have run yet for this installation.</p>
+                  <p className="mt-1 text-[12px] text-[#898983] dark:text-[#b8b8c0]">Open a pull request in a repository granted to the GitHub App.</p>
                 </div>
               )}
             </section>

@@ -5,7 +5,9 @@ import { getInstallationOctokit } from "./github";
 import { filterReviewableFiles, getFileContext } from "./context";
 import { reviewGraph } from "./graph/review.graph";
 
-const connection = { url: process.env.REDIS_URL! };
+const connection = process.env.REDIS_URL
+  ? { url: process.env.REDIS_URL }
+  : { host: "127.0.0.1", port: 6379 };
 
 const worker = new Worker(
   "pr-review",
@@ -88,6 +90,10 @@ const worker = new Worker(
   },
   { connection }
 );
+
+worker.on("error", (error) => {
+  console.error("Redis queue error:", error.message);
+});
 
 worker.on("failed", async (job, err) => {
   console.error(`Job ${job?.id} failed:`, err.message);

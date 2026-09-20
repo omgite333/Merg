@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import {
-  BookOpen01Icon,
   DashboardSquare01Icon,
   FolderGitIcon,
   GitForkIcon,
+  Logout01Icon,
   Settings01Icon,
   Task01Icon,
 } from "@hugeicons/core-free-icons";
@@ -29,16 +29,17 @@ function isActive(pathname: string, href: string, exact?: boolean) {
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-[#f8f8f5] text-[#20201e]">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-[238px] border-r border-[#e5e5df] bg-white px-4 py-5 lg:flex lg:flex-col">
+    <div className="min-h-screen bg-[#f8f8f5] text-[#20201e] dark:bg-[#0c0c10] dark:text-[#ececeb]">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-[238px] border-r border-[#e5e5df] bg-white px-4 py-5 dark:border-white/10 dark:bg-[#101016] lg:flex lg:flex-col">
         <Link href="/dashboard" className="flex items-center gap-3 px-2" aria-label="Merg dashboard">
           <Image src="/companies/openmerge.png" alt="" width={36} height={36} className="size-9 rounded-[11px] object-cover" priority />
-          <span className="text-[17px] font-semibold tracking-[-0.04em]">Merg</span>
+          <span className="text-[17px] font-semibold tracking-[-0.04em] text-[#171717] dark:text-white">Merg</span>
         </Link>
 
-        <p className="mt-10 px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#9b9b94]">Workspace</p>
+        <p className="mt-10 px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#9b9b94] dark:text-[#7c7c86]">Workspace</p>
         <nav className="mt-3 space-y-1" aria-label="Dashboard navigation">
           {navigation.map(({ href, label, icon, exact }) => {
             const active = isActive(pathname, href, exact);
@@ -48,7 +49,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                 href={href}
                 className={cn(
                   "flex h-10 items-center gap-3 rounded-xl px-3 text-[13px] font-medium transition-colors",
-                  active ? "bg-[#edf3ff] text-[#2764d8]" : "text-[#676762] hover:bg-[#f5f5f2] hover:text-[#292925]"
+                  active
+                    ? "bg-[#edf3ff] text-[#2764d8] dark:bg-white/10 dark:text-[#7fb0ff]"
+                    : "text-[#676762] hover:bg-[#f5f5f2] hover:text-[#292925] dark:text-[#a3a3ab] dark:hover:bg-white/5 dark:hover:text-[#ececeb]"
                 )}
               >
                 <DashboardIcon icon={icon} size={16} strokeWidth={active ? 2.1 : 1.8} aria-hidden="true" />
@@ -58,33 +61,37 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <div className="mt-auto space-y-1 border-t border-[#eeeeea] pt-4">
-          <Link href="/docs" className="flex h-10 items-center gap-3 rounded-xl px-3 text-[13px] font-medium text-[#676762] transition-colors hover:bg-[#f5f5f2] hover:text-[#292925]">
-            <DashboardIcon icon={BookOpen01Icon} size={16} aria-hidden="true" />
-            Documentation
-          </Link>
+        <div className="mt-auto space-y-1 border-t border-[#eeeeea] pt-4 dark:border-white/10">
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-[13px] font-medium text-[#676762] transition-colors hover:bg-[#f5f5f2] hover:text-[#292925] dark:text-[#a3a3ab] dark:hover:bg-white/5 dark:hover:text-[#ececeb]"
+          >
+            <DashboardIcon icon={Logout01Icon} size={16} aria-hidden="true" />
+            Sign out
+          </button>
         </div>
       </aside>
 
       <div className="lg:pl-[238px]">
-        <header className="sticky top-0 z-10 border-b border-[#e5e5df] bg-[#fbfbf9]/90 px-5 py-3 backdrop-blur-xl sm:px-8 lg:px-10">
+        <header className="sticky top-0 z-10 border-b border-[#e5e5df] bg-[#fbfbf9]/90 px-5 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#0d0d12]/90 sm:px-8 lg:px-10">
           <div className="mx-auto flex max-w-[1420px] items-center justify-between gap-4">
             <Link href="/dashboard" className="flex items-center gap-2 lg:hidden" aria-label="Merg dashboard">
               <Image src="/companies/openmerge.png" alt="" width={32} height={32} className="size-8 rounded-[10px] object-cover" priority />
-              <span className="text-[15px] font-semibold tracking-[-0.04em]">Merg</span>
+              <span className="text-[15px] font-semibold tracking-[-0.04em] text-[#171717] dark:text-white">Merg</span>
             </Link>
-            <p className="hidden text-[13px] font-medium text-[#777771] lg:block">Your GitHub review workspace</p>
+            <p className="hidden text-[13px] font-medium text-[#777771] dark:text-[#9a9aa3] lg:block">Your GitHub review workspace</p>
             <div className="flex items-center gap-3">
               <a
                 href={GITHUB_APP_INSTALL_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="hidden items-center gap-2 rounded-full border border-[#ddddD7] bg-white px-3.5 py-2 text-[12px] font-semibold text-[#40403c] transition-colors hover:border-[#bdbdb7] hover:bg-[#f7f7f4] sm:inline-flex"
+                className="hidden items-center gap-2 rounded-full border border-[#ddddD7] bg-white px-3.5 py-2 text-[12px] font-semibold text-[#40403c] transition-colors hover:border-[#bfbfb8] hover:bg-[#f7f7f4] dark:border-white/10 dark:bg-[#16161d] dark:text-[#ececeb] dark:hover:border-white/20 dark:hover:bg-[#1d1d24] sm:inline-flex"
               >
                 <DashboardIcon icon={GitForkIcon} size={14} aria-hidden="true" />
                 Add repositories
               </a>
-              <Link href="/" className="grid size-9 place-items-center rounded-full bg-[#20201e] text-[11px] font-bold text-white transition-transform hover:-translate-y-0.5" aria-label="Back to home">
+              <Link href="/dashboard" className="grid size-9 place-items-center rounded-full bg-[#20201e] text-[11px] font-bold text-white transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-[#111110]" aria-label="Merg dashboard">
                 OM
               </Link>
             </div>
@@ -93,7 +100,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             {navigation.map(({ href, label, icon, exact }) => {
               const active = isActive(pathname, href, exact);
               return (
-                <Link key={href} href={href} className={cn("flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-semibold", active ? "bg-[#20201e] text-white" : "text-[#777771] hover:bg-[#efefeb]")}>
+                <Link key={href} href={href} className={cn("flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-semibold", active ? "bg-[#20201e] text-white dark:bg-white dark:text-[#111110]" : "text-[#777771] hover:bg-[#efefeb] dark:text-[#9a9aa3] dark:hover:bg-white/10")}>
                   <DashboardIcon icon={icon} size={14} aria-hidden="true" />
                   {label}
                 </Link>

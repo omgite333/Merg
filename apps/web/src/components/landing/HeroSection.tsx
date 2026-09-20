@@ -1,45 +1,42 @@
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
-import { GITHUB_APP_INSTALL_URL } from "@/routes/apiRoute";
 import { DemoVideo } from "./DemoVideo";
+import { InstallButton } from "./InstallButton";
 
 export function HeroSection() {
   return (
     <section className="relative mx-auto max-w-[1180px] px-6 pb-20 pt-12 text-center sm:px-8 sm:pt-16 lg:px-10 lg:pt-20">
-      <div className="relative z-10 mx-auto inline-flex items-center gap-2 rounded-full border border-[#dadad5] bg-white px-4 py-2 text-[12px] font-medium text-[#676762] shadow-[0_3px_10px_rgba(23,23,23,0.07)]">
+      <div className="relative z-10 mx-auto inline-flex items-center gap-2 rounded-full border border-[#dadad5] bg-white px-4 py-2 text-[12px] font-medium text-[#676762] shadow-[0_3px_10px_rgba(23,23,23,0.07)] dark:border-white/10 dark:bg-[#16161d] dark:text-[#a6a6ae]">
         <span className="size-1.5 rounded-full bg-[#35a853] shadow-[0_0_0_3px_rgba(53,168,83,0.12)]" />
         Open source PR reviews for teams who ship
       </div>
 
-      <h1 className="relative z-10 mx-auto mt-7 max-w-[820px] font-pixel text-[clamp(1rem,13vw,6rem)] leading-[0.94] tracking-[-0.065em] text-[#171717]">
+      <h1 className="relative z-10 mx-auto mt-7 max-w-[820px] font-pixel text-[clamp(1rem,13vw,6rem)] leading-[0.94] tracking-[-0.065em] text-[#171717] dark:text-white">
         AI code review for
         <br />
         <span className="text-[#2764d8]">every pull request.</span>
       </h1>
-      <p className="mx-auto mt-8 max-w-[600px] text-[17px] leading-7 text-[#686864] sm:text-[19px]">
+      <p className="mx-auto mt-8 max-w-[600px] text-[17px] leading-7 text-[#686864] dark:text-[#a1a1aa] sm:text-[19px]">
         Merg reads every pull request with focused AI agents, explains what matters, and leaves your team with a clear path to merge.
       </p>
 
       <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <a
-          href={GITHUB_APP_INSTALL_URL}
-          target="_blank"
-          rel="noreferrer"
+        <InstallButton
           className="group inline-flex h-12 items-center justify-center gap-3 rounded-full bg-[#171717] px-6 text-[14px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#2a2a2a]"
         >
           Install on GitHub
           <HugeiconsIcon icon={ArrowUpRight01Icon} size={16} strokeWidth={1.8} className="transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-        </a>
+        </InstallButton>
         <Link
           href="#how-it-works"
-          className="inline-flex h-12 items-center justify-center rounded-full border border-[#deded8] bg-white px-6 text-[14px] font-semibold text-[#33332f] transition-colors hover:border-[#bdbdb6] hover:bg-[#fafaf7]"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-[#deded8] bg-white px-6 text-[14px] font-semibold text-[#33332f] transition-colors hover:border-[#bdbdb6] hover:bg-[#fafaf7] dark:border-white/15 dark:bg-[#16161d] dark:text-[#d8d8d6] dark:hover:border-white/25 dark:hover:bg-[#1d1d24]"
         >
           See how it works
         </Link>
       </div>
 
-      <div id="demo" className="mx-auto mt-20 max-w-[820px] overflow-hidden rounded-[24px] border border-[#dcdcd8] bg-[#fafaf8] shadow-[0_15px_40px_rgba(23,23,23,0.035)]">
+      <div id="demo" className="mx-auto mt-20 max-w-[820px] overflow-hidden rounded-[24px] border border-[#dcdcd8] bg-[#fafaf8] shadow-[0_15px_40px_rgba(23,23,23,0.035)] dark:border-white/10 dark:bg-[#101015]">
         <DemoVideo />
       </div>
     </section>

@@ -106,10 +106,10 @@ export function DashboardOverview() {
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#2764d8]">Workspace overview</p>
-          <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-[-0.06em] text-[#20201e] sm:text-[38px]">Your review activity.</h1>
-          <p className="mt-3 max-w-xl text-[14px] leading-6 text-[#73736e]">Track connected repositories and see the latest reviews Merg has delivered to GitHub.</p>
+          <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-[-0.06em] text-[#20201e] dark:text-white sm:text-[38px]">Your review activity.</h1>
+          <p className="mt-3 max-w-xl text-[14px] leading-6 text-[#73736e] dark:text-[#a1a1aa]">Track connected repositories and see the latest reviews Merg has delivered to GitHub.</p>
         </div>
-        <button onClick={() => void loadDashboard(true)} type="button" disabled={refreshing} className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-[#ddddD7] bg-white px-4 text-[12px] font-semibold text-[#4b4b46] transition-colors hover:border-[#bfbfb8] hover:bg-[#f7f7f4] disabled:cursor-not-allowed disabled:opacity-60">
+        <button onClick={() => void loadDashboard(true)} type="button" disabled={refreshing} className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-[#ddddD7] bg-white dark:border-white/10 dark:bg-[#14141a] px-4 text-[12px] font-semibold text-[#4b4b46] dark:text-[#d3d3d5] transition-colors hover:border-[#bfbfb8] hover:bg-[#f7f7f4] dark:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60">
           <DashboardIcon icon={Refresh01Icon} size={14} className={refreshing ? "animate-spin" : undefined} aria-hidden="true" />
           Refresh
         </button>
@@ -143,38 +143,38 @@ export function DashboardOverview() {
           </div>
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.8fr)]">
-            <section className="overflow-hidden rounded-2xl border border-[#e5e5e0] bg-white shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
+            <section className="overflow-hidden rounded-2xl border border-[#e5e5e0] bg-white dark:border-white/10 dark:bg-[#14141a] shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
               <div className="flex items-center justify-between gap-4 border-b border-[#ecece7] px-5 py-4 sm:px-6">
                 <div>
                   <h2 className="text-[15px] font-semibold tracking-[-0.025em]">Recent reviews</h2>
-                  <p className="mt-1 text-[12px] text-[#83837d]">The latest review sessions from your connected repositories.</p>
+                  <p className="mt-1 text-[12px] text-[#83837d] dark:text-[#b8b8c0]">The latest review sessions from your connected repositories.</p>
                 </div>
                 <Link href="/dashboard/reviews" className="shrink-0 text-[12px] font-semibold text-[#2764d8] hover:text-[#174cae]">View all</Link>
               </div>
 
               {workspace.recentReviews.length ? (
-                <div className="divide-y divide-[#efefeb]">
+                <div className="divide-y divide-[#efefeb] dark:divide-white/10">
                   {workspace.recentReviews.slice(0, 7).map(({ review, repository }) => (
-                    <div key={review.id} className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-[#fcfcfa] sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <div key={review.id} className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-[#fcfcfa] dark:bg-[#101016] dark:hover:bg-white/5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl bg-[#f0f4ff] text-[#2764d8]">
                           <DashboardIcon icon={GitPullRequestIcon} size={16} aria-hidden="true" />
                         </span>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <p className="truncate text-[13px] font-semibold text-[#33332f]">{repository.fullName}</p>
-                            <span className="text-[12px] text-[#8b8b85]">PR #{review.prNumber}</span>
+                            <p className="truncate text-[13px] font-semibold text-[#33332f] dark:text-[#e2e2e1]">{repository.fullName}</p>
+                            <span className="text-[12px] text-[#8b8b85] dark:text-[#b8b8c0]">PR #{review.prNumber}</span>
                           </div>
-                          <p className="mt-1 text-[12px] text-[#85857f]">{review.totalComments} {review.totalComments === 1 ? "finding" : "findings"} · {formatRelativeTime(review.completedAt ?? review.createdAt)}</p>
+                          <p className="mt-1 text-[12px] text-[#85857f] dark:text-[#9a9aa3]">{review.totalComments} {review.totalComments === 1 ? "finding" : "findings"} · {formatRelativeTime(review.completedAt ?? review.createdAt)}</p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between gap-3 sm:justify-end">
                         <StatusBadge status={review.status} />
                         <div className="flex items-center gap-1">
-                          <Link href={`/dashboard/reviews/${review.id}`} className="rounded-lg p-2 text-[#74746f] transition-colors hover:bg-[#f1f1ed] hover:text-[#2764d8]" aria-label={`View Merg review for pull request ${review.prNumber}`}>
+                          <Link href={`/dashboard/reviews/${review.id}`} className="rounded-lg p-2 text-[#74746f] dark:text-[#c2c2c9] transition-colors hover:bg-[#f1f1ed] hover:text-[#2764d8]" aria-label={`View Merg review for pull request ${review.prNumber}`}>
                             <DashboardIcon icon={ArrowUpRight01Icon} size={14} aria-hidden="true" />
                           </Link>
-                          <a href={githubPullRequestUrl(repository.fullName, review.prNumber)} target="_blank" rel="noreferrer" className="rounded-lg p-2 text-[#74746f] transition-colors hover:bg-[#f1f1ed] hover:text-[#2764d8]" aria-label={`Open pull request ${review.prNumber} on GitHub`}>
+                          <a href={githubPullRequestUrl(repository.fullName, review.prNumber)} target="_blank" rel="noreferrer" className="rounded-lg p-2 text-[#74746f] dark:text-[#c2c2c9] transition-colors hover:bg-[#f1f1ed] hover:text-[#2764d8]" aria-label={`Open pull request ${review.prNumber} on GitHub`}>
                             <DashboardIcon icon={GitPullRequestIcon} size={14} aria-hidden="true" />
                           </a>
                         </div>
@@ -184,44 +184,44 @@ export function DashboardOverview() {
                 </div>
               ) : (
                 <div className="px-6 py-12 text-center">
-                  <DashboardIcon icon={GitPullRequestIcon} size={20} className="mx-auto text-[#a3a39d]" aria-hidden="true" />
-                  <p className="mt-3 text-[13px] font-medium text-[#4d4d48]">No reviews have run yet.</p>
-                  <p className="mt-1 text-[12px] leading-5 text-[#898983]">Open a pull request in a connected repository and Merg will post the review on GitHub.</p>
+                  <DashboardIcon icon={GitPullRequestIcon} size={20} className="mx-auto text-[#a3a39d] dark:text-[#a9a9b1]" aria-hidden="true" />
+                  <p className="mt-3 text-[13px] font-medium text-[#4d4d48] dark:text-[#d3d3d5]">No reviews have run yet.</p>
+                  <p className="mt-1 text-[12px] leading-5 text-[#898983] dark:text-[#b8b8c0]">Open a pull request in a connected repository and Merg will post the review on GitHub.</p>
                 </div>
               )}
             </section>
 
             <div className="space-y-5">
-              <section className="rounded-2xl border border-[#e5e5e0] bg-white p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
+              <section className="rounded-2xl border border-[#e5e5e0] bg-white dark:border-white/10 dark:bg-[#14141a] p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[12px] font-semibold text-[#30302c]">GitHub connection</p>
-                    <p className="mt-1 text-[12px] text-[#85857f]">Merg App installation</p>
+                    <p className="text-[12px] font-semibold text-[#30302c] dark:text-[#f0f0ef]">GitHub connection</p>
+                    <p className="mt-1 text-[12px] text-[#85857f] dark:text-[#9a9aa3]">Merg App installation</p>
                   </div>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[#c6ead4] bg-[#edf9f1] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#167541]"><span className="size-1.5 rounded-full bg-[#198b4d]" />Active</span>
                 </div>
                 {primaryInstallation ? (
                   <div className="mt-5 rounded-xl bg-[#f8f8f5] px-4 py-3">
-                    <p className="truncate text-[13px] font-semibold text-[#393934]">{primaryInstallation.githubAccountLogin}</p>
-                    <p className="mt-1 text-[11px] text-[#85857f]">{primaryInstallation.githubAccountType} account · {primaryInstallation.repositories.length} connected {primaryInstallation.repositories.length === 1 ? "repository" : "repositories"}</p>
+                    <p className="truncate text-[13px] font-semibold text-[#393934] dark:text-[#d3d3d5]">{primaryInstallation.githubAccountLogin}</p>
+                    <p className="mt-1 text-[11px] text-[#85857f] dark:text-[#9a9aa3]">{primaryInstallation.githubAccountType} account · {primaryInstallation.repositories.length} connected {primaryInstallation.repositories.length === 1 ? "repository" : "repositories"}</p>
                   </div>
                 ) : null}
                 <Link href="/dashboard/repositories" className="mt-4 inline-flex text-[12px] font-semibold text-[#2764d8] hover:text-[#174cae]">Manage repositories <span className="ml-1">→</span></Link>
               </section>
 
-              <section className="rounded-2xl border border-[#e5e5e0] bg-white p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
+              <section className="rounded-2xl border border-[#e5e5e0] bg-white dark:border-white/10 dark:bg-[#14141a] p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[12px] font-semibold text-[#30302c]">Repository coverage</p>
-                    <p className="mt-1 text-[12px] text-[#85857f]">Most active reviewed repositories</p>
+                    <p className="text-[12px] font-semibold text-[#30302c] dark:text-[#f0f0ef]">Repository coverage</p>
+                    <p className="mt-1 text-[12px] text-[#85857f] dark:text-[#9a9aa3]">Most active reviewed repositories</p>
                   </div>
                   <DashboardIcon icon={FolderGitIcon} size={16} className="text-[#2764d8]" aria-hidden="true" />
                 </div>
                 <div className="mt-4 space-y-3">
                   {workspace.repositories.slice(0, 4).map((repository) => (
                     <div key={repository.id} className="flex items-center justify-between gap-3">
-                      <p className="truncate text-[12px] font-medium text-[#494944]">{repository.fullName}</p>
-                      <span className="shrink-0 text-[10px] font-semibold text-[#757570]">{repository.recentReviews.length} {repository.recentReviews.length === 1 ? "review" : "reviews"}</span>
+                      <p className="truncate text-[12px] font-medium text-[#494944] dark:text-[#d3d3d5]">{repository.fullName}</p>
+                      <span className="shrink-0 text-[10px] font-semibold text-[#757570] dark:text-[#c2c2c9]">{repository.recentReviews.length} {repository.recentReviews.length === 1 ? "review" : "reviews"}</span>
                     </div>
                   ))}
                 </div>

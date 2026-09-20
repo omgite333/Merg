@@ -51,23 +51,23 @@ export function MetricCard({
   };
 
   return (
-    <section className="rounded-2xl border border-[#e5e5e0] bg-white p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)]">
+    <section className="rounded-2xl border border-[#e5e5e0] bg-white p-5 shadow-[0_8px_24px_rgba(23,23,23,0.035)] dark:border-white/10 dark:bg-[#14141a]">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[12px] font-medium text-[#777771]">{label}</p>
-          <p className="mt-3 text-[30px] font-semibold leading-none tracking-[-0.06em] text-[#20201e]">{value}</p>
+          <p className="text-[12px] font-medium text-[#777771] dark:text-[#a1a1aa]">{label}</p>
+          <p className="mt-3 text-[30px] font-semibold leading-none tracking-[-0.06em] text-[#20201e] dark:text-white">{value}</p>
         </div>
         <span className={cn("grid size-10 place-items-center rounded-xl", accents[accent])}>{icon}</span>
       </div>
-      <p className="mt-4 text-[12px] leading-5 text-[#868681]">{hint}</p>
+      <p className="mt-4 text-[12px] leading-5 text-[#868681] dark:text-[#8b8b94]">{hint}</p>
     </section>
   );
 }
 
 export function DashboardLoading({ label = "Loading your workspace" }: { label?: string }) {
   return (
-    <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-[#e7e7e2] bg-white">
-      <div className="flex items-center gap-3 text-[13px] font-medium text-[#73736e]">
+    <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-[#e7e7e2] bg-white dark:border-white/10 dark:bg-[#14141a]">
+      <div className="flex items-center gap-3 text-[13px] font-medium text-[#73736e] dark:text-[#a1a1aa]">
         <DashboardIcon icon={Loading03Icon} size={16} className="animate-spin text-[#2764d8]" aria-hidden="true" />
         {label}
       </div>
@@ -85,10 +85,10 @@ export function EmptyPanel({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#d7d7d1] bg-[#fcfcfa] px-6 text-center">
-      <div className="grid size-11 place-items-center rounded-2xl bg-[#edf3ff] text-[17px] font-semibold text-[#2764d8]">OM</div>
-      <h2 className="mt-4 text-[16px] font-semibold tracking-[-0.025em] text-[#262622]">{title}</h2>
-      <p className="mt-2 max-w-sm text-[13px] leading-6 text-[#777771]">{description}</p>
+    <div className="flex min-h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#d7d7d1] bg-[#fcfcfa] px-6 text-center dark:border-white/15 dark:bg-[#101016]">
+      <div className="grid size-11 place-items-center rounded-2xl bg-[#edf3ff] text-[17px] font-semibold text-[#2764d8] dark:bg-white/10 dark:text-[#7fb0ff]">OM</div>
+      <h2 className="mt-4 text-[16px] font-semibold tracking-[-0.025em] text-[#262622] dark:text-[#ececeb]">{title}</h2>
+      <p className="mt-2 max-w-sm text-[13px] leading-6 text-[#777771] dark:text-[#a1a1aa]">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );
