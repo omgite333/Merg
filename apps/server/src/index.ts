@@ -1,14 +1,19 @@
 import express from "express";
 import "dotenv/config";
+import cors from "cors";
 import { Webhooks } from "@octokit/webhooks";
 
 import { reviewQueue } from "./queue";
+import { apiRouter } from "./api";
 import { prisma } from "@repo/database";
 
 const app = express();
 const webhooks = new Webhooks({
   secret: process.env.GITHUB_WEBHOOK_SECRET!,
 });
+
+app.use(cors());
+app.use("/api", apiRouter);
 
 // capture raw body — signature verification needs the exact bytes GitHub sent
 app.use(
