@@ -20,6 +20,7 @@ const graph = new StateGraph(ReviewState)
   .addNode("merge", async (state) => {
     const all = [...state.codeFindings, ...state.securityFindings, ...state.performanceFindings];
 
+
     const byLine = new Map<string, Finding[]>();
     for (const f of all) {
       const key = `${f.file}:${f.line}`;
@@ -31,7 +32,7 @@ const graph = new StateGraph(ReviewState)
       if (group.length === 1) return group[0];
 
       const worst = group.reduce((a, b) =>
-        SEVERITY_ORDER.indexOf(b.severity) > SEVERITY_ORDER.indexOf(a.severity) ? b : a
+        SEVERITY_ORDER.indexOf(b.severity) < SEVERITY_ORDER.indexOf(a.severity) ? b : a 
       );
 
       return {

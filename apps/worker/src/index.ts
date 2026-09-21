@@ -46,6 +46,7 @@ const worker = new Worker(
 
     const durationSeconds = (Date.now() - startedAt) / 1000;
 
+
     const { body: summaryBody, hasBlocking } = await buildReviewSummary(allFindings, {
       prTitle: prTitle ?? `PR #${pullNumber}`,
       owner,
@@ -81,7 +82,7 @@ const worker = new Worker(
     }
 
     try {
-      const event = hasBlocking ? "REQUEST_CHANGES" : allFindings.length === 0 ? "APPROVE" : "COMMENT";
+      const event = hasBlocking ? "REQUEST_CHANGES" : allFindings.length > 0 ? "APPROVE" : "COMMENT";
       await octokit.request("POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews", {
         owner,
         repo,

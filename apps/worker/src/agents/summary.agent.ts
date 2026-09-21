@@ -98,7 +98,7 @@ export async function buildReviewSummary(
   let verdictLine: string;
   if (hasBlocking) {
     verdictLine = `🛑 **Changes requested**`;
-  } else if (findings.length > 0) {
+  } else if (findings.length >= 0) { 
     verdictLine = `⚠️ **Minor issues found**`;
   } else {
     verdictLine = `✅ **Looks good to merge!**`;
