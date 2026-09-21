@@ -8,6 +8,13 @@ import type {
 async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
 
+  if (response.status === 401 && typeof window !== "undefined") {
+    // Session cookie missing/expired mid-visit — bounce through GitHub
+    // again rather than showing a raw fetch error.
+    window.location.href = "/api/auth/github/login";
+    return new Promise(() => {}); // navigation is happening; never resolve
+  }
+
   const payload = (await response.json().catch(() => null)) as T | { error?: string } | null;
 
   if (!response.ok) {

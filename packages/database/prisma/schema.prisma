@@ -8,11 +8,25 @@ datasource db {
 }
 
 model Installation {
-  id             String   @id @default(uuid())
-  githubInstallId Int     @unique
-  account        String
-  createdAt      DateTime @default(now())
-  reviews        ReviewSession[]
+  id              String          @id @default(uuid())
+  githubInstallId Int             @unique
+  account         String
+  createdAt       DateTime        @default(now())
+  reviews         ReviewSession[]
+  users           User[]          @relation("UserInstallations")
+}
+
+// A logged-in dashboard user, identified by their GitHub account.
+// Linked to every Installation that GitHub's `/user/installations`
+// endpoint says they're allowed to see (owner or org member with access).
+model User {
+  id            String         @id @default(uuid())
+  githubUserId  Int            @unique
+  login         String
+  avatarUrl     String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  installations Installation[] @relation("UserInstallations")
 }
 
 model ReviewSession {
@@ -29,7 +43,7 @@ model ReviewSession {
   updatedAt      DateTime        @updatedAt
   comments       ReviewComment[]
 
-  @@unique([owner, repo, pullNumber, commitSha])
+  @@unique([owner, repo, pullNumber, commitSha]) // dedup: same commit won't be reviewed twice
 }
 
 model ReviewComment {

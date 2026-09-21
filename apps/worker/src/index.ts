@@ -133,7 +133,10 @@ const worker = new Worker(
 
 worker.on("failed", async (job, err) => {
   console.error(`Job ${job?.id} failed:`, err.message);
-  if (job?.data?.sessionId) {
+  // Only mark the session FAILED once retries are exhausted — the job is
+  // still in flight (and will be retried) on earlier failures.
+  const attempts = job?.opts.attempts ?? 1;
+  if (job?.data?.sessionId && (job.attemptsMade ?? 1) >= attempts) {
     await prisma.reviewSession.update({ where: { id: job.data.sessionId }, data: { status: "FAILED" } });
   }
 });

@@ -12,7 +12,15 @@ const webhooks = new Webhooks({
   secret: process.env.GITHUB_WEBHOOK_SECRET!,
 });
 
-app.use(cors());
+// Restricted, not `cors()` with no args — that reflects any origin. With
+// credentials (our session cookie) enabled, an open origin would let any
+// website read a logged-in user's dashboard data via their browser.
+app.use(
+  cors({
+    origin: process.env.WEB_ORIGIN ?? "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 app.use(   // capture raw body — signature verification needs the exact bytes GitHub sent
   express.json({

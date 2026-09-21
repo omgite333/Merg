@@ -1,5 +1,9 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-export const API_URL = `${API_BASE}/api`;
+// Relative on purpose: requests go to the Next.js origin (localhost:3000)
+// and next.config.ts rewrites them server-side to the Express API. That
+// keeps them same-origin from the browser's point of view, so the
+// httpOnly session cookie is sent automatically — no CORS/credentials
+// dance required. Don't point this at the backend's own origin directly.
+export const API_URL = "/api";
 
 export const DASHBOARD_URL = API_URL + "/dashboard";
 export const REVIEWS_URL = API_URL + "/reviews";

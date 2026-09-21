@@ -14,6 +14,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { GITHUB_APP_INSTALL_URL } from "@/routes/apiRoute";
+import type { SessionPayload } from "@/lib/auth";
 import { DashboardIcon } from "./DashboardPrimitives";
 
 const navigation = [
@@ -27,9 +28,25 @@ function isActive(pathname: string, href: string, exact?: boolean) {
   return exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function DashboardShell({ children }: { children: ReactNode }) {
+export function DashboardShell({
+  children,
+  session,
+}: {
+  children: ReactNode;
+  session?: SessionPayload;
+}) {
   const pathname = usePathname();
   const router = useRouter();
+
+  async function handleSignOut() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/");
+    router.refresh();
+  }
+
+  const initials = session?.login
+    ? session.login.slice(0, 2).toUpperCase()
+    : "OM";
 
   return (
     <div className="min-h-screen bg-[#f8f8f5] text-[#20201e] dark:bg-[#0c0c10] dark:text-[#ececeb]">
@@ -62,9 +79,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="mt-auto space-y-1 border-t border-[#eeeeea] pt-4 dark:border-white/10">
+          {session ? (
+            <p className="truncate px-3 pb-1 text-[12px] font-medium text-[#9a9a94] dark:text-[#6f6f7a]">
+              @{session.login}
+            </p>
+          ) : null}
           <button
             type="button"
-            onClick={() => router.push("/")}
+            onClick={handleSignOut}
             className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-[13px] font-medium text-[#676762] transition-colors hover:bg-[#f5f5f2] hover:text-[#292925] dark:text-[#a3a3ab] dark:hover:bg-white/5 dark:hover:text-[#ececeb]"
           >
             <DashboardIcon icon={Logout01Icon} size={16} aria-hidden="true" />
@@ -92,7 +114,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                 Add repositories
               </a>
               <Link href="/dashboard" className="grid size-9 place-items-center rounded-full bg-[#20201e] text-[11px] font-bold text-white transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-[#111110]" aria-label="Merg dashboard">
-                OM
+                {initials}
               </Link>
             </div>
           </div>

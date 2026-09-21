@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "@repo/database";
+import { requireAuth } from "./middleware/auth";
 
 const SEVERITY: Record<string, string> = {
   critical: "CRITICAL",
@@ -91,8 +92,19 @@ function mapSession(session: SessionWithComments) {
 
 export const apiRouter = Router();
 
-apiRouter.get("/dashboard", async (_req, res) => {
+// Everything below requires a valid session, and every query is scoped to
+// req.user.installationIds — the installations GitHub says this user can
+// access. Never trust an id from the request body/params without checking
+// it against that list first.
+apiRouter.use(requireAuth);
+
+apiRouter.get("/me", async (req, res) => {
+  res.json({ success: true, user: { login: req.user!.login }, error: null });
+});
+
+apiRouter.get("/dashboard", async (req, res) => {
   const installations = await prisma.installation.findMany({
+    where: { id: { in: req.user!.installationIds } },
     include: {
       reviews: { include: { comments: true }, orderBy: { createdAt: "desc" } },
     },
@@ -146,14 +158,17 @@ apiRouter.get("/reviews", async (req, res) => {
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
   const LIMIT = 20;
 
+  const where = { installationId: { in: req.user!.installationIds } };
+
   const [sessions, total] = await Promise.all([
     prisma.reviewSession.findMany({
+      where,
       include: { comments: true },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * LIMIT,
       take: LIMIT,
     }),
-    prisma.reviewSession.count(),
+    prisma.reviewSession.count({ where }),
   ]);
 
   res.json({
@@ -170,8 +185,11 @@ apiRouter.get("/reviews", async (req, res) => {
 });
 
 apiRouter.get("/reviews/:id", async (req, res) => {
-  const session: SessionWithComments | null = await prisma.reviewSession.findUnique({
-    where: { id: req.params.id },
+  // findFirst (not findUnique) so we can enforce ownership in the same
+  // query — a review belonging to someone else's installation should look
+  // identical to one that doesn't exist.
+  const session: SessionWithComments | null = await prisma.reviewSession.findFirst({
+    where: { id: req.params.id, installationId: { in: req.user!.installationIds } },
     include: { comments: { orderBy: { createdAt: "asc" } } },
   });
 
