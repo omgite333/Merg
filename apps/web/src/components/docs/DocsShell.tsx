@@ -1,85 +1,45 @@
-import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { SiteHeader } from "@/components/landing/SiteHeader";
+import { LandingFooter } from "@/components/landing/LandingFooter";
+import { cn } from "@/lib/utils";
 
-const nav = [
+const navigation = [
   {
-    section: "Getting Started",
+    section: "Guide",
     items: [
-      { label: "Introduction", href: "/docs" },
-      { label: "Quick Start Guide", href: "/docs/quick-start" },
-      { label: "Install GitHub App", href: "/docs/install" },
+      { label: "Overview", href: "#overview" },
+      { label: "How it works", href: "#how-it-works" },
+      { label: "The review agents", href: "#agents" },
+      { label: "The dashboard", href: "#dashboard" },
+      { label: "Configuration", href: "#configuration" },
     ],
   },
   {
-    section: "Configuration",
+    section: "Reference",
     items: [
-      { label: "Agents & Rules", href: "/docs/agents" },
-      { label: "Ignore Patterns", href: "/docs/ignore-patterns" },
-    ],
-  },
-  {
-    section: "Agents",
-    items: [
-      { label: "Code Quality Agent", href: "/docs/agents/code-quality" },
-      { label: "Security Agent", href: "/docs/agents/security" },
-      { label: "Performance Agent", href: "/docs/agents/performance" },
-    ],
-  },
-  {
-    section: "API Reference",
-    items: [
-      { label: "Webhook Events", href: "/docs/api/webhooks" },
-      { label: "REST API", href: "/docs/api/rest" },
+      { label: "API endpoints", href: "#api" },
+      { label: "Project information", href: "#project" },
     ],
   },
 ];
 
-export function DocsShell({ children }: { children: React.ReactNode }) {
+export function DocsShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#131010] font-mono text-white">
-      <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b border-white/8 bg-[#131010] px-5">
-        <Link href="/" className="transition-opacity hover:opacity-80">
-          <Image
-            src="/openmerge/reclogo.png"
-            alt="Merg"
-            width={110}
-            height={26}
-            className="h-[26px] w-auto"
-          />
-        </Link>
-        <div className="flex items-center gap-4 text-[12px] text-[#555]">
-          <Link href="/docs" className="hover:text-white">Docs</Link>
-          <Link href="https://github.com/omgite333/Merg" className="hover:text-white">GitHub</Link>
-          <Link
-            href="/signin"
-            className="border border-white/15 px-3 py-1 text-[11px] text-white hover:bg-white hover:text-black"
-          >
-            Sign in
-          </Link>
-        </div>
-      </header>
+    <div className="flex min-h-screen flex-col bg-white text-[#171717] dark:bg-[#0c0c10] dark:text-[#ececeb]">
+      <SiteHeader />
 
-      <div className="flex">
-        <aside className="sticky top-12 h-[calc(100vh-3rem)] w-[220px] shrink-0 overflow-y-auto border-r border-white/8 px-4 py-5">
-          <div className="mb-4 flex items-center gap-2 border border-white/8 px-3 py-2 text-[11px] text-[#444]">
-            <span>Search ...</span>
-            <span className="ml-auto text-[10px] border border-white/8 px-1">Ctrl K</span>
-          </div>
-
-          <nav className="space-y-5 text-[12px]">
-            {nav.map((group) => (
+      <div className="mx-auto flex w-full max-w-[1180px] flex-1 px-5 sm:px-8 lg:px-10">
+        <aside className="sticky top-24 hidden h-[calc(100vh-6rem)] w-[220px] shrink-0 self-start overflow-y-auto border-r border-[#e9e9e6] py-10 pr-6 dark:border-white/10 lg:block">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9b9b94] dark:text-[#7c7c86]">Docs</p>
+          <nav className="mt-5 space-y-6 text-[13px]">
+            {navigation.map((group) => (
               <div key={group.section}>
-                <p className="mb-1 flex items-center gap-1.5 font-bold text-[#888]">
-                  <span className="text-[10px]">⊞</span>
-                  {group.section}
-                </p>
-                <ul className="space-y-0.5 pl-4">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#ababa5] dark:text-[#6f6f7a]">{group.section}</p>
+                <ul className="space-y-0.5">
                   {group.items.map((item) => (
                     <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className="block py-1 text-[#555] transition-colors hover:text-white"
-                      >
+                      <Link href={item.href} className={cn("block rounded-lg px-2 py-1.5 transition-colors hover:text-[#171717] dark:hover:text-white")}>
                         {item.label}
                       </Link>
                     </li>
@@ -90,8 +50,10 @@ export function DocsShell({ children }: { children: React.ReactNode }) {
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 px-0 py-12 sm:px-8 lg:px-14">{children}</main>
       </div>
+
+      <LandingFooter />
     </div>
   );
 }
