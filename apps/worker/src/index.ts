@@ -5,13 +5,16 @@ import { getInstallationOctokit } from "./github";
 import { filterReviewableFiles, getFileContext } from "./context";
 import { reviewGraph } from "./graph/review.graph";
 import { buildReviewSummary } from "./agents/summary.agent";
+import { upsertCheckRun } from "./checkRun";
 import type { Finding } from "./llm";
 
 const connection = { url: process.env.REDIS_URL! };
 
 function buildCommentBody(finding: Finding): string {
-  const parts = [`**[${finding.severity.toUpperCase()} · ${finding.category}]** ${finding.message}`];
-  if (finding.currentCode) parts.push(`\n\`\`\`\n${finding.currentCode}\n\`\`\``);
+  const parts: string[] = [];
+  if (finding.title) parts.push(`### ${finding.title}`);
+  parts.push(`**[${finding.severity.toUpperCase()} · ${finding.category}]** ${finding.message}`);
+  if (finding.currentCode) parts.push(`\`\`\`\n${finding.currentCode}\n\`\`\``);
   if (finding.suggestion) parts.push(`\n**Suggested fix:**\n\`\`\`\n${finding.suggestion}\n\`\`\``);
   return parts.join("\n");
 }
@@ -91,6 +94,15 @@ const worker = new Worker(
       console.error(`Failed to post review summary for PR #${pullNumber}`, err.message);
     }
 
+    await upsertCheckRun({
+      octokit,
+      owner,
+      repo,
+      headSha: commitSha,
+      findings: allFindings,
+      reviewBody: summaryBody,
+    });
+
     for (const { finding, githubCommentId } of commentRecords) {
       await prisma.reviewComment.create({
         data: {
@@ -99,6 +111,7 @@ const worker = new Worker(
           line: finding.line,
           severity: finding.severity,
           category: finding.category,
+          title: finding.title ?? null,
           message: finding.message,
           currentCode: finding.currentCode ?? null,
           suggestion: finding.suggestion ?? null,

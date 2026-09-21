@@ -118,6 +118,17 @@ export async function buildReviewSummary(
     ? changes.map((c) => `- ${c}`).join("\n")
     : "- No notable changes summarized.";
 
+  const findingsSection =
+    findings.length === 0
+      ? ""
+      : `\n### Findings\n\n${findings
+          .map((f) => {
+            const tag = f.blocking ? "🔴 BLOCKING" : `🔶 ${f.severity.toUpperCase()}`;
+            const title = f.title ? ` — ${f.title}` : "";
+            return `- **[${f.category.toUpperCase()} · ${tag}]** \`${f.file}:${f.line}\`${title}`;
+          })
+          .join("\n")}`;
+
   const body = `### PR Reviewer Summary - ${title}
 
 ${description}
@@ -127,7 +138,7 @@ ${changeBullets}
 ${verdictLine}
 
 ${issuesLine}
-${blockingLine}
+${blockingLine}${findingsSection}
 
 ---
 _Reviewed ${meta.changedFiles.length} files in ${meta.durationSeconds.toFixed(1)}s_`;

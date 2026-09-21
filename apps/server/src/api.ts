@@ -23,6 +23,7 @@ type SessionWithComments = {
   pullNumber: number;
   commitSha: string;
   status: string;
+  summary: string | null;
   createdAt: Date;
   comments: {
     id: string;
@@ -30,7 +31,9 @@ type SessionWithComments = {
     line: number;
     severity: string;
     category: string;
+    title: string | null;
     message: string;
+    suggestion: string | null;
     githubCommentId: bigint | null;
     createdAt: Date;
   }[];
@@ -48,11 +51,11 @@ function mapComment(comment: SessionWithComments["comments"][number], sessionId:
     reviewSessionId: sessionId,
     filePath: comment.file,
     line: comment.line,
-    title: null,
+    title: comment.title ?? null,
     body: comment.message,
     severity: SEVERITY[comment.severity] ?? "MEDIUM",
     category: CATEGORY[comment.category] ?? "OTHER",
-    suggestion: null,
+    suggestion: comment.suggestion ?? null,
     githubCommentId: comment.githubCommentId ? String(comment.githubCommentId) : null,
     createdAt: comment.createdAt.toISOString(),
   };
@@ -70,7 +73,7 @@ function mapSession(session: SessionWithComments) {
     headSha: session.commitSha,
     baseBranch: "main",
     status: session.status,
-    summary: null,
+    summary: session.summary ?? null,
     filesReviewed,
     totalComments: session.comments.length,
     errorMessage: null,

@@ -35,6 +35,7 @@ Produce a <scratchpad> section first (not returned to the user, just your intern
 The JSON array items must have exactly these fields:
 - filePath: string — exact path from the diff header (e.g. "src/auth/login.ts")
 - line: number — line number in the NEW file (after the diff is applied)
+- title: string — a one-line title under 60 characters, e.g. "Null dereference when profile is deleted"; a reviewer should grasp the issue from this alone
 - body: string — 2–4 sentences: what is wrong, why it matters in this context, what could go wrong. If uncertain, phrase as a question.
 - severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO"
 - category: "BUG" | "STYLE" | "REFACTOR" | "DOCUMENTATION" | "TEST" | "OTHER"

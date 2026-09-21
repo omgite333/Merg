@@ -54,6 +54,7 @@ export async function runAgent(
       line: item.line,
       severity: String(item.severity ?? "info").toLowerCase() as Finding["severity"],
       category: String(item.category ?? categoryFallback).toLowerCase() as Finding["category"],
+      title: typeof item.title === "string" ? item.title.trim() : null,
       message: item.body ?? "",
       currentCode: item.currentCode ?? null,
       suggestion: item.suggestion ?? null,

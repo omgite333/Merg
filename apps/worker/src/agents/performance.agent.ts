@@ -40,6 +40,7 @@ Produce a <scratchpad> section first with your reasoning and impact estimates, t
 The JSON array items must have exactly these fields:
 - filePath: string — exact path from the diff header
 - line: number — line number in the NEW file
+- title: string — a one-line title under 60 characters, e.g. "N+1 query in user list loader"
 - body: string — 3–4 sentences covering: what the performance problem is, estimated real-world impact at a specific realistic scale, what the failure mode looks like in production
 - severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO"
 - category: "PERFORMANCE"

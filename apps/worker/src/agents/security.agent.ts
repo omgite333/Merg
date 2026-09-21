@@ -47,6 +47,7 @@ Produce a <scratchpad> section first with your attacker-perspective walkthrough 
 The JSON array items must have exactly these fields:
 - filePath: string — exact path from the diff header
 - line: number — line in the NEW file where the vulnerability is introduced
+- title: string — a one-line title under 60 characters naming the vulnerability, e.g. "SQL injection in name parameter"
 - body: string — 3–5 sentences: vulnerability type, specific attack vector (who, what, where, how), impact if exploited. For LOW/uncertain: phrase as a question.
 - severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO"
 - category: "SECURITY"

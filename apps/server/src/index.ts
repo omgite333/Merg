@@ -36,6 +36,26 @@ app.post("/webhook", async (req, res) => {
   const event = req.headers["x-github-event"];
   const action = req.body.action;
 
+if (event === "installation") {
+  const { installation } = req.body;
+
+  if (action === "created") {
+    await prisma.installation.upsert({
+      where: { githubInstallId: installation.id },
+      update: { account: installation.account?.login ?? "" },
+      create: { githubInstallId: installation.id, account: installation.account?.login ?? "" },
+    });
+    console.log(`Installation created: ${installation.id}`);
+  } else if (action === "deleted") {
+    await prisma.installation
+      .delete({ where: { githubInstallId: installation.id } })
+      .catch((err) => console.error(`Failed to remove installation ${installation.id}:`, err.message));
+    console.log(`Installation deleted: ${installation.id}`);
+  }
+
+  return res.sendStatus(200);
+}
+
 if (event === "pull_request" && ["opened", "synchronize"].includes(action)) {
   const { pull_request, repository, installation } = req.body;
 
