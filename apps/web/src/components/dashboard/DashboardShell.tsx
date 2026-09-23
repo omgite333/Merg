@@ -11,6 +11,7 @@ import {
   Logout01Icon,
   Settings01Icon,
   Task01Icon,
+  WorkflowSquare02Icon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { GITHUB_APP_INSTALL_URL } from "@/routes/apiRoute";
@@ -20,6 +21,7 @@ import { DashboardIcon } from "./DashboardPrimitives";
 const navigation = [
   { href: "/dashboard", label: "Overview", icon: DashboardSquare01Icon, exact: true },
   { href: "/dashboard/reviews", label: "Reviews", icon: Task01Icon },
+  { href: "/dashboard/ci", label: "CI Triage", icon: WorkflowSquare02Icon },
   { href: "/dashboard/repositories", label: "Repositories", icon: FolderGitIcon },
   { href: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
 ];

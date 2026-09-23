@@ -1,5 +1,7 @@
-import { DASHBOARD_URL, REVIEWS_URL } from "@/routes/apiRoute";
+import { CI_RUNS_URL, DASHBOARD_URL, REVIEWS_URL } from "@/routes/apiRoute";
 import type {
+  CIRunDetailResponse,
+  CIRunsResponse,
   DashboardResponse,
   ReviewDetailResponse,
   ReviewsResponse,
@@ -35,4 +37,12 @@ export function getReviews(page = 1) {
 
 export function getReview(reviewId: string) {
   return apiFetch<ReviewDetailResponse>(`${REVIEWS_URL}/${reviewId}`);
+}
+
+export function getCIRuns(page = 1) {
+  return apiFetch<CIRunsResponse>(`${CI_RUNS_URL}?page=${page}`);
+}
+
+export function getCIRun(ciRunId: string) {
+  return apiFetch<CIRunDetailResponse>(`${CI_RUNS_URL}/${ciRunId}`);
 }

@@ -12,3 +12,11 @@ export const reviewQueue = new Queue("pr-review", {
     backoff: { type: "exponential", delay: 5000 },
   },
 });
+
+export const ciTriageQueue = new Queue("ci-triage", {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: "exponential", delay: 5000 },
+  },
+});

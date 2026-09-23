@@ -1,4 +1,4 @@
-import type { CommentSeverity, ReviewStatus } from "@/types/dashboard";
+import type { CiClassification, CommentSeverity, CIRunStatus, ReviewStatus } from "@/types/dashboard";
 
 export const reviewStatusMeta: Record<ReviewStatus, { label: string; className: string }> = {
   QUEUED: {
@@ -38,6 +38,52 @@ export const severityMeta: Record<CommentSeverity, { label: string; className: s
   },
   INFO: {
     label: "Info",
+    className: "border-[#d8d8d3] bg-[#f7f7f4] text-[#686864]",
+  },
+};
+
+export const ciStatusMeta: Record<CIRunStatus, { label: string; className: string }> = {
+  QUEUED: {
+    label: "Queued",
+    className: "border-[#eadfb9] bg-[#fff8df] text-[#8b6500]",
+  },
+  RUNNING: {
+    label: "Triaging",
+    className: "border-[#cddcff] bg-[#edf3ff] text-[#2860c8]",
+  },
+  COMPLETED: {
+    label: "Completed",
+    className: "border-[#c6ead4] bg-[#edf9f1] text-[#167541]",
+  },
+  FAILED: {
+    label: "Triage failed",
+    className: "border-[#f3cccc] bg-[#fff0f0] text-[#c23c3c]",
+  },
+};
+
+export const classificationMeta: Record<CiClassification, { label: string; className: string }> = {
+  BUILD_ERROR: {
+    label: "Build error",
+    className: "border-[#efc1c1] bg-[#fff0f0] text-[#b42318]",
+  },
+  TEST_FAILURE: {
+    label: "Test failure",
+    className: "border-[#f2d1bd] bg-[#fff4ed] text-[#b54708]",
+  },
+  LINT: {
+    label: "Lint",
+    className: "border-[#eadfb9] bg-[#fff9e5] text-[#8b6500]",
+  },
+  TIMEOUT: {
+    label: "Timeout",
+    className: "border-[#cddcff] bg-[#edf3ff] text-[#2860c8]",
+  },
+  FLAKY: {
+    label: "Flaky",
+    className: "border-[#d0cfe8] bg-[#f4f3fc] text-[#5b5bb5]",
+  },
+  UNKNOWN: {
+    label: "Unknown",
     className: "border-[#d8d8d3] bg-[#f7f7f4] text-[#686864]",
   },
 };
@@ -82,4 +128,8 @@ export function formatDuration(startedAt: string | null | undefined, completedAt
 
 export function githubPullRequestUrl(repository: string, prNumber: number) {
   return `https://github.com/${repository}/pull/${prNumber}`;
+}
+
+export function githubWorkflowRunUrl(repository: string, workflowRunId: string) {
+  return `https://github.com/${repository}/actions/runs/${workflowRunId}`;
 }

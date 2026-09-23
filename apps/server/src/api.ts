@@ -102,6 +102,72 @@ apiRouter.get("/me", async (req, res) => {
   res.json({ success: true, user: { login: req.user!.login }, error: null });
 });
 
+function mapCiRun(run: {
+  id: string;
+  owner: string;
+  repo: string;
+  workflowRunId: bigint;
+  workflowName: string;
+  headSha: string;
+  pullNumber: number | null;
+  status: string;
+  classification: string | null;
+  summary: string | null;
+  postedCommentId: bigint | null;
+  createdAt: Date;
+}) {
+  return {
+    id: run.id,
+    repository: { fullName: `${run.owner}/${run.repo}`, owner: run.owner, name: run.repo },
+    workflowRunId: String(run.workflowRunId),
+    workflowName: run.workflowName,
+    headSha: run.headSha,
+    pullNumber: run.pullNumber,
+    status: run.status,
+    classification: run.classification,
+    summary: run.summary,
+    postedCommentId: run.postedCommentId ? String(run.postedCommentId) : null,
+    createdAt: run.createdAt.toISOString(),
+  };
+}
+
+apiRouter.get("/ci-runs", async (req, res) => {
+  const parsedPage = Number.parseInt(String(req.query.page ?? "1"), 10);
+  const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const LIMIT = 20;
+
+  const where = { installationId: { in: req.user!.installationIds } };
+
+  const [runs, total] = await Promise.all([
+    prisma.cIRun.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * LIMIT,
+      take: LIMIT,
+    }),
+    prisma.cIRun.count({ where }),
+  ]);
+
+  res.json({
+    success: true,
+    ciRuns: runs.map(mapCiRun),
+    pagination: { page, limit: LIMIT, total, pages: Math.max(1, Math.ceil(total / LIMIT)) },
+    error: null,
+  });
+});
+
+apiRouter.get("/ci-runs/:id", async (req, res) => {
+  const run = await prisma.cIRun.findFirst({
+    where: { id: req.params.id, installationId: { in: req.user!.installationIds } },
+  });
+
+  if (!run) {
+    return res.status(404).json({ success: false, error: "CI_RUN_NOT_FOUND", ciRun: null });
+  }
+
+  res.json({ success: true, ciRun: mapCiRun(run), error: null });
+});
+
 apiRouter.get("/dashboard", async (req, res) => {
   const installations = await prisma.installation.findMany({
     where: { id: { in: req.user!.installationIds } },

@@ -13,6 +13,7 @@ model Installation {
   account         String
   createdAt       DateTime        @default(now())
   reviews         ReviewSession[]
+  ciRuns          CIRun[]
   users           User[]          @relation("UserInstallations")
 }
 
@@ -61,4 +62,24 @@ model ReviewComment {
   blocking        Boolean       @default(false)
   githubCommentId BigInt?
   createdAt       DateTime      @default(now())
+}
+
+// A single GitHub Actions workflow run that failed and was triaged by the
+// CI worker. Scoped to an installation like everything else.
+model CIRun {
+  id              String        @id @default(uuid())
+  installation    Installation  @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  installationId  String
+  owner           String
+  repo            String
+  workflowRunId   BigInt        @unique
+  workflowName    String
+  headSha         String
+  pullNumber      Int?          // null when the run isn't tied to an open PR (e.g. fork PR, or push with no PR)
+  status          String        @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
+  classification  String?       // BUILD_ERROR | TEST_FAILURE | LINT | TIMEOUT | FLAKY | UNKNOWN
+  summary         String?
+  postedCommentId BigInt?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }

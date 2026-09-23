@@ -3,7 +3,7 @@ import "dotenv/config";
 import cors from "cors";
 import { Webhooks } from "@octokit/webhooks";
 
-import { reviewQueue } from "./queue";
+import { reviewQueue, ciTriageQueue } from "./queue";
 import { apiRouter } from "./api";
 import { prisma } from "@repo/database";
 
@@ -111,6 +111,60 @@ if (event === "pull_request" && ["opened", "synchronize"].includes(action)) {
   });
 
   console.log(`Queued review ${session.id} for PR #${pull_request.number}`);
+}
+
+if (event === "workflow_run" && action === "completed") {
+  const { workflow_run, repository, installation } = req.body;
+
+  // Only triage real failures — success/cancelled/skipped runs are noise.
+  if (!["failure", "timed_out", "startup_failure"].includes(workflow_run.conclusion)) {
+    return res.sendStatus(200);
+  }
+
+  const workflowRunId = BigInt(workflow_run.id);
+
+  const existing = await prisma.cIRun.findUnique({ where: { workflowRunId } });
+  if (existing) {
+    console.log(`Already triaged workflow run #${workflow_run.id}, skipping`);
+    return res.sendStatus(200);
+  }
+
+  const install = await prisma.installation.upsert({
+    where: { githubInstallId: installation.id },
+    update: {},
+    create: { githubInstallId: installation.id, account: repository.owner.login },
+  });
+
+  // pull_requests[] is only populated for same-repo branches, not forks —
+  // GitHub doesn't expose PR linkage for fork-triggered workflow runs. In
+  // that case the triage result still gets stored, just can't be posted as
+  // a PR comment (the worker falls back to a check run on the commit).
+  const pullNumber: number | null = workflow_run.pull_requests?.[0]?.number ?? null;
+
+  const ciRun = await prisma.cIRun.create({
+    data: {
+      installationId: install.id,
+      owner: repository.owner.login,
+      repo: repository.name,
+      workflowRunId,
+      workflowName: workflow_run.name,
+      headSha: workflow_run.head_sha,
+      pullNumber,
+      status: "QUEUED",
+    },
+  });
+
+  await ciTriageQueue.add("triage", {
+    ciRunId: ciRun.id,
+    installationId: installation.id,
+    owner: repository.owner.login,
+    repo: repository.name,
+    workflowRunId: workflow_run.id,
+    headSha: workflow_run.head_sha,
+    pullNumber,
+  });
+
+  console.log(`Queued CI triage ${ciRun.id} for workflow run #${workflow_run.id} (${workflow_run.conclusion})`);
 }
 
 res.sendStatus(200);

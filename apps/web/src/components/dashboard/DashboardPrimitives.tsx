@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { Loading03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import { cn } from "@/lib/utils";
-import { reviewStatusMeta, severityMeta } from "@/lib/dashboard";
-import type { CommentSeverity, ReviewStatus } from "@/types/dashboard";
+import { ciStatusMeta, classificationMeta, reviewStatusMeta, severityMeta } from "@/lib/dashboard";
+import type { CiClassification, CIRunStatus, CommentSeverity, ReviewStatus } from "@/types/dashboard";
 
 export function DashboardIcon({ icon, size = 16, strokeWidth = 1.8, ...props }: HugeiconsIconProps) {
   return <HugeiconsIcon icon={icon} size={size} strokeWidth={strokeWidth} {...props} />;
@@ -22,6 +22,29 @@ export function StatusBadge({ status }: { status: ReviewStatus }) {
 
 export function SeverityBadge({ severity }: { severity: CommentSeverity }) {
   const meta = severityMeta[severity];
+
+  return (
+    <span className={cn("inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]", meta.className)}>
+      {meta.label}
+    </span>
+  );
+}
+
+export function CiStatusBadge({ status }: { status: CIRunStatus }) {
+  const meta = ciStatusMeta[status];
+
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold", meta.className)}>
+      <span className={cn("size-1.5 rounded-full", status === "RUNNING" ? "animate-pulse bg-current" : "bg-current")} />
+      {meta.label}
+    </span>
+  );
+}
+
+export function ClassificationBadge({ classification }: { classification: CiClassification | null }) {
+  const meta = classification
+    ? classificationMeta[classification]
+    : { label: "Unclassified", className: "border-[#d8d8d3] bg-[#f7f7f4] text-[#686864]" };
 
   return (
     <span className={cn("inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]", meta.className)}>

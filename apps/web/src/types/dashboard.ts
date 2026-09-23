@@ -90,3 +90,49 @@ export type ReviewDetailResponse = {
   review: ReviewDetail;
   error: string | null;
 };
+
+export type CIRunStatus = "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+
+export type CiClassification =
+  | "BUILD_ERROR"
+  | "TEST_FAILURE"
+  | "LINT"
+  | "TIMEOUT"
+  | "FLAKY"
+  | "UNKNOWN";
+
+export type CIRun = {
+  id: string;
+  repository: {
+    fullName: string;
+    owner: string;
+    name: string;
+  };
+  workflowRunId: string;
+  workflowName: string;
+  headSha: string;
+  pullNumber: number | null;
+  status: CIRunStatus;
+  classification: CiClassification | null;
+  summary: string | null;
+  postedCommentId: string | null;
+  createdAt: string;
+};
+
+export type CIRunsResponse = {
+  success: boolean;
+  ciRuns: CIRun[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+  error: string | null;
+};
+
+export type CIRunDetailResponse = {
+  success: boolean;
+  ciRun: CIRun;
+  error: string | null;
+};

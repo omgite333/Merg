@@ -1,6 +1,7 @@
 import type { Finding } from "./llm";
 
 const CHECK_NAME = "Merg PR review";
+let warnedMissingPermission = false;
 
 interface CheckRunInput {
   octokit: any;
@@ -55,6 +56,17 @@ export async function upsertCheckRun({ octokit, owner, repo, headSha, findings, 
       });
     }
   } catch (err: any) {
-    console.error(`Failed to post ${CHECK_NAME} check run for ${owner}/${repo}@${headSha}:`, err.message);
+    const message: string = err?.message ?? "";
+    if (message.includes("Resource not accessible by integration")) {
+      if (!warnedMissingPermission) {
+        warnedMissingPermission = true;
+        console.warn(
+          `${CHECK_NAME} check runs are disabled: the GitHub App is missing the "Checks" write permission. ` +
+            "Grant it in the GitHub App's Permissions settings (Checks → Read and write), then approve the updated permission for your repositories."
+        );
+      }
+    } else {
+      console.error(`Failed to post ${CHECK_NAME} check run for ${owner}/${repo}@${headSha}:`, message);
+    }
   }
 }
