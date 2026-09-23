@@ -8,6 +8,7 @@ export const API_URL = "/api";
 export const DASHBOARD_URL = API_URL + "/dashboard";
 export const REVIEWS_URL = API_URL + "/reviews";
 export const CI_RUNS_URL = API_URL + "/ci-runs";
+export const CI_RUNS_STATS_URL = API_URL + "/ci-runs/stats";
 
 export const GITHUB_APP_INSTALL_URL =
   process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL ??

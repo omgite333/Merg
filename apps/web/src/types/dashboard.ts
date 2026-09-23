@@ -136,3 +136,17 @@ export type CIRunDetailResponse = {
   ciRun: CIRun;
   error: string | null;
 };
+
+export type CiStats = {
+  total: number;
+  byStatus: Record<CIRunStatus, number>;
+  byClassification: Record<CiClassification, number>;
+  postedComments: number;
+  recent: CIRun[];
+};
+
+export type CiStatsResponse = {
+  success: boolean;
+  stats: CiStats;
+  error: string | null;
+};

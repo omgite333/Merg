@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   DashboardSquare01Icon,
@@ -18,16 +18,56 @@ import { GITHUB_APP_INSTALL_URL } from "@/routes/apiRoute";
 import type { SessionPayload } from "@/lib/auth";
 import { DashboardIcon } from "./DashboardPrimitives";
 
-const navigation = [
+type DashboardMode = "pr" | "ci";
+
+const prNavigation = [
   { href: "/dashboard", label: "Overview", icon: DashboardSquare01Icon, exact: true },
   { href: "/dashboard/reviews", label: "Reviews", icon: Task01Icon },
+];
+
+const ciNavigation = [
+  { href: "/dashboard?mode=ci", label: "Overview", icon: DashboardSquare01Icon, exact: true },
   { href: "/dashboard/ci", label: "CI Triage", icon: WorkflowSquare02Icon },
-  { href: "/dashboard/repositories", label: "Repositories", icon: FolderGitIcon },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
+];
+
+const sharedNavigation = [
+  { href: "/dashboard/repositories", label: "Repositories", icon: FolderGitIcon, exact: false },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings01Icon, exact: false },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean) {
-  return exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const target = href.split("?")[0];
+  return exact ? pathname === target : pathname === target || pathname.startsWith(`${target}/`);
+}
+
+function ModeToggle({ mode }: { mode: DashboardMode }) {
+  const segments: Array<{ value: DashboardMode; label: string; href: string }> = [
+    { value: "pr", label: "PR Agent", href: "/dashboard" },
+    { value: "ci", label: "CI Triage", href: "/dashboard?mode=ci" },
+  ];
+
+  return (
+    <div className="inline-flex items-center gap-0.5 rounded-full border border-[#e1e1db] bg-[#f3f3ef] p-0.5 dark:border-white/10 dark:bg-[#17171e]">
+      {segments.map((segment) => {
+        const active = mode === segment.value;
+        return (
+          <Link
+            key={segment.value}
+            href={segment.href}
+            aria-pressed={active}
+            className={cn(
+              "inline-flex h-7 items-center rounded-full px-3.5 text-[12px] font-semibold transition-colors",
+              active
+                ? "bg-white text-[#20201e] shadow-sm dark:bg-white/10 dark:text-white"
+                : "text-[#777771] hover:text-[#292925] dark:text-[#9a9aa3] dark:hover:text-[#ececeb]"
+            )}
+          >
+            {segment.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
 }
 
 export function DashboardShell({
@@ -38,7 +78,15 @@ export function DashboardShell({
   session?: SessionPayload;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
+
+  const mode: DashboardMode =
+    pathname.startsWith("/dashboard/ci") || (pathname === "/dashboard" && searchParams.get("mode") === "ci")
+      ? "ci"
+      : "pr";
+
+  const navigation = [...(mode === "pr" ? prNavigation : ciNavigation), ...sharedNavigation];
 
   async function handleSignOut() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -104,7 +152,10 @@ export function DashboardShell({
               <Image src="/companies/openmerge.png" alt="" width={32} height={32} className="size-8 rounded-[10px] object-cover" priority />
               <span className="text-[15px] font-semibold tracking-[-0.04em] text-[#171717] dark:text-white">Merg</span>
             </Link>
-            <p className="hidden text-[13px] font-medium text-[#777771] dark:text-[#9a9aa3] lg:block">Your GitHub review workspace</p>
+            <p className="hidden text-[13px] font-medium text-[#777771] dark:text-[#9a9aa3] lg:block">
+              {mode === "ci" ? "Your CI triage workspace" : "Your GitHub review workspace"}
+            </p>
+            <ModeToggle mode={mode} />
             <div className="flex items-center gap-3">
               <a
                 href={GITHUB_APP_INSTALL_URL}

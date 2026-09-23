@@ -156,6 +156,68 @@ apiRouter.get("/ci-runs", async (req, res) => {
   });
 });
 
+const CI_CLASSIFICATIONS = [
+  "BUILD_ERROR",
+  "TEST_FAILURE",
+  "LINT",
+  "TIMEOUT",
+  "FLAKY",
+  "UNKNOWN",
+] as const;
+
+apiRouter.get("/ci-runs/stats", async (req, res) => {
+  const where = { installationId: { in: req.user!.installationIds } };
+
+  const [total, groupedByStatus, groupedByClassification, recent] = await Promise.all([
+    prisma.cIRun.count({ where }),
+    prisma.cIRun.groupBy({
+      by: ["status"],
+      where,
+      _count: { _all: true },
+    }),
+    prisma.cIRun.groupBy({
+      by: ["classification"],
+      where,
+      _count: { _all: true },
+    }),
+    prisma.cIRun.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 7,
+    }),
+  ]);
+
+  const byStatus: Record<string, number> = {};
+  for (const status of ["QUEUED", "RUNNING", "COMPLETED", "FAILED"]) {
+    byStatus[status] = 0;
+  }
+  for (const row of groupedByStatus) {
+    byStatus[row.status] = row._count._all;
+  }
+
+  const byClassification: Record<string, number> = {};
+  for (const classification of CI_CLASSIFICATIONS) {
+    byClassification[classification] = 0;
+  }
+  for (const row of groupedByClassification) {
+    if (row.classification) byClassification[row.classification] = row._count._all;
+  }
+
+  const posted = await prisma.cIRun.count({ where: { ...where, postedCommentId: { not: null } } });
+
+  res.json({
+    success: true,
+    stats: {
+      total,
+      byStatus,
+      byClassification,
+      postedComments: posted,
+      recent: recent.map(mapCiRun),
+    },
+    error: null,
+  });
+});
+
 apiRouter.get("/ci-runs/:id", async (req, res) => {
   const run = await prisma.cIRun.findFirst({
     where: { id: req.params.id, installationId: { in: req.user!.installationIds } },

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -12,5 +13,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     redirect("/api/auth/github/login");
   }
 
-  return <DashboardShell session={session}>{children}</DashboardShell>;
+  return (
+    <Suspense fallback={null}>
+      <DashboardShell session={session}>{children}</DashboardShell>
+    </Suspense>
+  );
 }

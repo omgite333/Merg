@@ -1,5 +1,6 @@
-import { CI_RUNS_URL, DASHBOARD_URL, REVIEWS_URL } from "@/routes/apiRoute";
+import { CI_RUNS_STATS_URL, CI_RUNS_URL, DASHBOARD_URL, REVIEWS_URL } from "@/routes/apiRoute";
 import type {
+  CiStatsResponse,
   CIRunDetailResponse,
   CIRunsResponse,
   DashboardResponse,
@@ -45,4 +46,8 @@ export function getCIRuns(page = 1) {
 
 export function getCIRun(ciRunId: string) {
   return apiFetch<CIRunDetailResponse>(`${CI_RUNS_URL}/${ciRunId}`);
+}
+
+export function getCiStats() {
+  return apiFetch<CiStatsResponse>(CI_RUNS_STATS_URL);
 }
