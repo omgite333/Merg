@@ -132,9 +132,22 @@ dashboard's contract fails the server's typecheck instead of the browser.
 
 - [Bun](https://bun.com) ≥ 1.3
 - [Node.js](https://nodejs.org) ≥ 24
-- A running [Redis](https://redis.io) instance
-- A PostgreSQL database (local or hosted — any Prisma-supported Postgres works)
+- [Docker](https://docs.docker.com/get-docker/) (to run Redis in one command)
+- A [Neon](https://neon.tech) Postgres database
 - A GitHub App (see below)
+
+### Start Redis
+
+Postgres is hosted on Neon, so it needs nothing local. Redis is not, so it is
+the one service worth containerising:
+
+```sh
+docker compose up -d
+```
+
+That starts Redis on `localhost:6379` with a named volume and a health check,
+matching the `REDIS_URL` in every `.env.example`. `docker compose ps` shows
+`healthy` once it is ready.
 
 ### Install dependencies
 
@@ -225,10 +238,18 @@ with `llm.failover` / `llm.auth_failed` / `llm.exhausted` for the failure path.
 
 ### Database
 
+Postgres is hosted on Neon. The **direct** connection string (host without
+`-pooler`) is what migrations want; the **pooled** one is what the running apps
+should use. `?sslmode=require` is mandatory in both.
+
 ```sh
-bun run --filter @repo/database db:generate   # generate the Prisma client
-bun run --filter @repo/database db:migrate:deploy  # apply migrations
+bun run --filter @repo/database db:generate       # generate the Prisma client
+bun run --filter @repo/database db:migrate:deploy  # apply migrations to Neon
 ```
+
+`db:generate` is not run by `bun install`, because the generated client lands in
+`node_modules` rather than in a tracked path. CI generates it explicitly before
+typechecking for the same reason.
 
 ### Run in development
 
@@ -253,11 +274,44 @@ turbo dev --filter=web
 Other useful commands:
 
 ```sh
-turbo build          # build all apps and packages
-turbo lint           # lint everything
-bun run check-types  # typecheck everything (tsc --noEmit)
-bun run format       # format code with Prettier
+bun run build      # build all apps and packages
+bun run typecheck  # tsc --noEmit across the monorepo
+bun run test       # run every test suite via turbo
+bun run format     # format code with Prettier
 ```
+
+`turbo run lint` currently only covers `web`: the `server`, `worker` and
+`ci-worker` have no ESLint config, and `packages/ui`'s config fails to parse
+because `@babel/preset-typescript` is missing. Lint is therefore not part of the
+CI gate yet.
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and push to `main`, and
+must be green before merging. One job, roughly two minutes:
+
+1. `bun install --frozen-lockfile` — the lockfile is the contract, so a
+   dependency change that was not committed fails here.
+2. `bun run --filter @repo/database db:generate` — the Prisma client is
+   generated into `node_modules` and is never committed, so typechecking needs
+   it regenerated.
+3. `bun run typecheck` — all five workspaces that have a `typecheck` script.
+4. `bun run test` — the `server`, `worker` and `ci-worker` suites.
+5. `bun run turbo run build --filter=web` — catches build breaks. The dashboard
+   routes are all server-rendered on demand, so this needs no database.
+
+The suites mock GitHub, Prisma and Redis, so no service containers are required.
+The job still sets placeholder values for the variables the boot-time env
+schemas require, because those schemas parse on import:
+
+```sh
+bun install --frozen-lockfile
+bun run --filter @repo/database db:generate
+bun run typecheck
+bun run test
+```
+
+Run that sequence locally before pushing and you will see exactly what CI sees.
 
 ### Setting up the GitHub App
 

@@ -1,0 +1,33 @@
+# Local infrastructure for Merg: Redis only.
+#
+# Postgres is hosted on Neon, so `DATABASE_URL` points there and nothing local
+# is needed for it. Redis is not, so it is the one service worth containerising.
+#
+#   docker compose up -d          # http://localhost:6379
+#   docker compose ps             # wait for "healthy"
+#   docker compose down           # stop; add -v to also drop the volume
+#
+# If you already run Redis natively, skip this file entirely and leave
+# REDIS_URL=redis://localhost:6379 in place. To run the container anyway on a
+# different port, set REDIS_PORT and point REDIS_URL at the same port:
+#
+#   REDIS_PORT=6380 docker compose up -d
+#
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Survives restarts so queued review/ci jobs are not silently dropped.
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  redis-data:
