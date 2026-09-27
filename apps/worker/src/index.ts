@@ -2,7 +2,8 @@ import { Worker } from "bullmq";
 import "dotenv/config";
 import { prisma } from "@repo/database";
 import { getInstallationOctokit } from "./github";
-import { filterReviewableFiles, getFileContext } from "./context";
+import { filterReviewableFiles } from "./context/filter";
+import { buildRepositoryContext } from "./context";
 import { reviewGraph } from "./graph/review.graph";
 import { buildReviewSummary } from "./agents/summary.agent";
 import { upsertCheckRun } from "./checkRun";
@@ -23,24 +24,37 @@ const worker = new Worker(
   "pr-review",
   async (job) => {
     const startedAt = Date.now();
-    const { sessionId, installationId, owner, repo, pullNumber, commitSha, prTitle } = job.data;
+    const { sessionId, installationId, owner, repo, pullNumber, commitSha, baseSha, prTitle } = job.data;
 
     await prisma.reviewSession.update({ where: { id: sessionId }, data: { status: "RUNNING" } });
 
     const octokit = await getInstallationOctokit(installationId);
+    const auth = (await octokit.auth()) as { token: string };
 
-    const { data: rawFiles } = await octokit.request(
-      "GET /repos/{owner}/{repo}/pulls/{pull_number}/files",
-      { owner, repo, pull_number: pullNumber }
+    // Phase 1A context engine: clone at exactly the PR head, diff from the
+    // merge-base, and collect relevant PR history — reuses the App octokit.
+    const context = await buildRepositoryContext({
+      owner,
+      repo,
+      prNumber: pullNumber,
+      baseSha,
+      headSha: commitSha,
+      authToken: auth.token,
+      octokit,
+    });
+
+    const files = filterReviewableFiles(context.changes.files).filter(
+      (file) => file.status !== "deleted"
     );
-
-    const files = filterReviewableFiles(rawFiles);
     const allFindings: Finding[] = [];
 
     for (const file of files) {
       if (!file.patch) continue;
-      const fileContent = await getFileContext(octokit, owner, repo, file.filename, commitSha);
-      const result = await reviewGraph.invoke({ filename: file.filename, patch: file.patch, fileContent });
+      const result = await reviewGraph.invoke({
+        filename: file.path,
+        patch: file.patch,
+        fileContent: file.content,
+      });
       allFindings.push(...result.allFindings);
     }
 
@@ -51,7 +65,7 @@ const worker = new Worker(
       owner,
       repo,
       pullNumber,
-      changedFiles: files.map((f) => f.filename),
+      changedFiles: files.map((f) => f.path),
       durationSeconds,
     });
 

@@ -2,7 +2,8 @@
   "name": "worker",
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "module": "index.ts",
   "type": "module",
@@ -25,6 +26,8 @@
     "dotenv": "^18.0.1",
     "groq-sdk": "^1.6.0",
     "ioredis": "^6.0.0",
+    "tree-sitter-wasm": "^2.0.2",
+    "web-tree-sitter": "^0.27.0",
     "zod": "^4.6.5"
   }
 }

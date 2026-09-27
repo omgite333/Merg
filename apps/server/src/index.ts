@@ -107,6 +107,7 @@ if (event === "pull_request" && ["opened", "synchronize"].includes(action)) {
     repo: repository.name,
     pullNumber: pull_request.number,
     commitSha: pull_request.head.sha,
+    baseSha: pull_request.base.sha,
     prTitle: pull_request.title,
   });
 
