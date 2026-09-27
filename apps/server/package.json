@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "typecheck": "tsc --noEmit",
+    "test": "bun test",
     "postinstall": "prisma skills sync || exit 0"
   },
   "module": "index.ts",

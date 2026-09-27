@@ -94,6 +94,25 @@ packages/
   typescript-config/ Shared tsconfig presets
 ```
 
+### Server layering
+
+`apps/server/src` is split so a request crosses each layer exactly once, in
+order, and comes back out as a validated envelope:
+
+```
+api.ts              composition root: mounts routers, applies requireAuth
+  └─ routes/        path + method + zod schema. No business logic.
+       └─ controllers/   orchestration: read request, call Prisma, shape body
+            ├─ schema/   zod request validation (validate() middleware)
+            ├─ mappers/  Prisma row -> wire format
+            └─ types/    envelope, row shapes, response types
+```
+
+Response types are declared once in `types/responses.ts` and mirror
+`apps/web/src/types/dashboard.ts`, so a mapper change that breaks the
+dashboard's contract fails the server's typecheck instead of the browser.
+`api.routes.test.ts` pins the exact JSON bodies against that contract.
+
 ## Tech stack
 
 | Layer       | Technology                                                        |

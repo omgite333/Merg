@@ -2,16 +2,20 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { parse } from "cookie";
 import { prisma } from "@repo/database";
+import { ApiError } from "../types/api";
 
 const SESSION_COOKIE = "merg_session";
 
 export type SessionPayload = { userId: string; login: string };
 
+/** What `requireAuth` puts on the request, and what controllers read. */
+export type AuthedUser = SessionPayload & { installationIds: string[] };
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: SessionPayload & { installationIds: string[] };
+      user?: AuthedUser;
     }
   }
 }
@@ -53,4 +57,15 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   };
 
   next();
+}
+
+/**
+ * Narrowing accessor for controllers. `requireAuth` runs on the whole router,
+ * so this only ever fires if a route is mounted outside that guard — which is
+ * exactly the mistake worth failing loudly on rather than reading
+ * `req.user!` and getting a confusing 500 further down.
+ */
+export function requireUser(req: Request): AuthedUser {
+  if (!req.user) throw new ApiError(401, "NOT_AUTHENTICATED");
+  return req.user;
 }
