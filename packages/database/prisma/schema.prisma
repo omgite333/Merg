@@ -38,13 +38,25 @@ model ReviewSession {
   repo           String
   pullNumber     Int
   commitSha      String
-  status         String          @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
+  baseSha        String?         // PR base at the time of the webhook; null only for sessions created before crash recovery existed
+  status         String          @default("QUEUED") // QUEUED | RUNNING | RETRYING | COMPLETED | FAILED
   summary        String?         // synthesized review verdict from the 4th LLM call
+
+  // Crash recovery. A RUNNING session is only trusted while a worker keeps
+  // refreshing heartbeatAt; workerId/leaseId name the worker that owns it and
+  // act as a fencing token, so a worker that lost its lease (paused, network
+  // partitioned, or evicted) can never write over a newer attempt.
+  workerId       String?
+  leaseId        String?         @unique
+  heartbeatAt    DateTime?
+  attemptCount   Int             @default(0)
+
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   comments       ReviewComment[]
 
   @@unique([owner, repo, pullNumber, commitSha]) // dedup: same commit won't be reviewed twice
+  @@index([status, heartbeatAt]) // recovery sweep: find RUNNING sessions past their lease
 }
 
 model ReviewComment {

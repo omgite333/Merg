@@ -39,7 +39,7 @@ const pipeline: { step: string; title: string; body: string }[] = [
   {
     step: "2",
     title: "Queue + retries",
-    body: "Jobs run through a Redis-backed BullMQ queue with retries and exponential backoff, so a transient GitHub or model outage doesn't mark a review as failed.",
+    body: "Jobs run through a Redis-backed BullMQ queue with retries and exponential backoff, so a transient GitHub or model outage doesn't mark a review as failed. A worker that dies mid-review is caught too: it holds a heartbeat lease on the session, and if the heartbeat stops the review is re-queued for another attempt instead of hanging forever.",
   },
   {
     step: "3",

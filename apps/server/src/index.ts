@@ -96,6 +96,10 @@ if (event === "pull_request" && ["opened", "synchronize"].includes(action)) {
       repo: repository.name,
       pullNumber: pull_request.number,
       commitSha: pull_request.head.sha,
+      // Recorded on the session, not just the job: the worker's recovery sweep
+      // re-queues a session from the queue when the worker dies mid-review,
+      // and it has to rebuild the job payload without asking GitHub.
+      baseSha: pull_request.base.sha,
       status: "QUEUED",
     },
   });

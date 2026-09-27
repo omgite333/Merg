@@ -31,6 +31,7 @@ It is built around three principles:
 - **Inline diff comments** — findings are posted as line-level review comments on the exact lines that changed, with the flagged code and a concrete suggested fix.
 - **Blocking-aware verdicts** — a `REQUEST_CHANGES`, `COMMENT`, or `APPROVE` review is posted automatically based on whether any finding is blocking (`MERGE` gate is configurable).
 - **Deduplication** — the same commit is never reviewed twice (`owner/repo/PR/commit_SHA` uniqueness), so pushes that haven't changed get skipped.
+- **Crash recovery** — a worker that dies mid-review doesn't strand the session: it stops heartbeating, a recovery sweep re-queues the review, and a lease keeps the dead worker's late writes from overwriting the retry.
 - **GitHub App integration** — webhooks trigger reviews; signatures are verified before anything is queued.
 - **Unified dashboard** — a Next.js dashboard shows every repository and PR review across all your GitHub installations, with status, findings, and history.
 - **Noise filtering** — lockfiles, build output, vendored code, and generated files are never sent to agents.
@@ -67,12 +68,15 @@ It is built around three principles:
 │  • summarize all findings (summary.agent)  └──────────────┘  │
 │  • post inline comments + review to GitHub                   │
 │  • persist findings to Postgres (Prisma)                     │
+│  • hold a heartbeat lease; sweep re-queues dead sessions     │
 └──────────────────────────────────────────────────────────────┘
                        │
                        ▼
         GitHub PR: line comments + summary review
         Dashboard: apps/web reads /api/dashboard
 ```
+
+**Crash recovery** (`apps/worker/src/lease.ts`, `apps/worker/src/recovery.ts`): while a review runs, its worker refreshes a `heartbeatAt` timestamp and holds a `leaseId` on the session. A worker that is killed, evicted, or cut off from the network stops heartbeating; every 30s a sweep looks for `RUNNING` sessions whose last heartbeat is more than 90s old, resets them to `RETRYING`, and puts them back on the queue (at most 3 attempts, then `FAILED`). The lease is the fencing token: a worker that comes back to life matches zero rows on its next write, so it can't double-post a review the retry has already taken over.
 
 **The review graph** (`apps/worker/src/graph/review.graph.ts`) merges findings from all three agents back onto the same line: if two agents flag the same line, the highest severity wins, messages are combined, and blocking is OR'd — so the author sees one actionable comment, not three overlapping ones.
 

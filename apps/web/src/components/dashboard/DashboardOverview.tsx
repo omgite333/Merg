@@ -91,7 +91,7 @@ export function DashboardOverview() {
       .flatMap((repository) => repository.recentReviews.map((review) => ({ review, repository })))
       .sort((left, right) => new Date(right.review.createdAt).getTime() - new Date(left.review.createdAt).getTime());
 
-    const runningReviews = recentReviews.filter(({ review }) => ["QUEUED", "RUNNING"].includes(review.status));
+    const runningReviews = recentReviews.filter(({ review }) => ["QUEUED", "RUNNING", "RETRYING"].includes(review.status));
     const failedReviews = recentReviews.filter(({ review }) => review.status === "FAILED");
     const completedReviews = recentReviews.filter(({ review }) => review.status === "COMPLETED");
     const recentFindings = recentReviews.reduce((total, { review }) => total + review.totalComments, 0);

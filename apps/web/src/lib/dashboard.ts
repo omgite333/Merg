@@ -9,6 +9,10 @@ export const reviewStatusMeta: Record<ReviewStatus, { label: string; className: 
     label: "Reviewing",
     className: "border-[#cddcff] bg-[#edf3ff] text-[#2860c8]",
   },
+  RETRYING: {
+    label: "Requeued",
+    className: "border-[#cddcff] bg-[#edf3ff] text-[#2860c8]",
+  },
   COMPLETED: {
     label: "Completed",
     className: "border-[#c6ead4] bg-[#edf9f1] text-[#167541]",

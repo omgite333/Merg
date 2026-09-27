@@ -1,4 +1,4 @@
-export type ReviewStatus = "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+export type ReviewStatus = "QUEUED" | "RUNNING" | "RETRYING" | "COMPLETED" | "FAILED";
 
 export type CommentSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
 

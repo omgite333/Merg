@@ -20,6 +20,7 @@ const reviewStatuses: Array<{ value: "ALL" | ReviewStatus; label: string }> = [
   { value: "ALL", label: "All statuses" },
   { value: "QUEUED", label: "Queued" },
   { value: "RUNNING", label: "Reviewing" },
+  { value: "RETRYING", label: "Requeued" },
   { value: "COMPLETED", label: "Completed" },
   { value: "FAILED", label: "Needs attention" },
 ];

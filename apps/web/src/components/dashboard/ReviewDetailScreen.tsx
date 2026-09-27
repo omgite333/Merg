@@ -68,7 +68,10 @@ export function ReviewDetailScreen({ reviewId }: { reviewId: string }) {
     };
   }, [reviewId]);
 
-  const activeReview = data?.review.status === "QUEUED" || data?.review.status === "RUNNING";
+  const activeReview =
+    data?.review.status === "QUEUED" ||
+    data?.review.status === "RUNNING" ||
+    data?.review.status === "RETRYING";
 
   useEffect(() => {
     if (!activeReview) return;
