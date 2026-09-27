@@ -1,13 +1,5 @@
-import { ChatGroq } from "@langchain/groq";
-import "dotenv/config";
+import { invokeWithFallback } from "../llmProvider";
 import type { Finding } from "../llm";
-
-const model = new ChatGroq({
-  apiKey: process.env.GROQ_API_KEY,
-  model: "openai/gpt-oss-120b", // check console.groq.com/docs/models for current recommendation
-  temperature: 0,
-  maxTokens: 4096,
-});
 
 /**
  * Prompts are instructed to emit a <scratchpad>...</scratchpad> block
@@ -42,13 +34,16 @@ export async function runAgent(
     ? `Full file (for context — do not flag issues outside the diff below):\n${fileContent}\n\nDiff:\n${patch}`
     : `Diff:\n${patch}`;
 
-  const response = await model.invoke([
-    { role: "system", content: systemPrompt },
-    { role: "user", content: `File: ${filename}\n\n${userContent}` },
-  ]);
+  const response = await invokeWithFallback(
+    [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: `File: ${filename}\n\n${userContent}` },
+    ],
+    { temperature: 0, maxTokens: 4096, label: "review-agent" }
+  );
 
   try {
-    const items = extractJsonArray(response.content as string);
+    const items = extractJsonArray(response.content);
     return items.map((item: any) => ({
       file: item.filePath ?? filename,
       line: item.line,

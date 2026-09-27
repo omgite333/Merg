@@ -1,13 +1,5 @@
-import { ChatGroq } from "@langchain/groq";
-import "dotenv/config";
+import { invokeWithFallback } from "../llmProvider";
 import type { Finding } from "../llm";
-
-const model = new ChatGroq({
-  apiKey: process.env.GROQ_API_KEY,
-  model: "openai/gpt-oss-120b",
-  temperature: 0.2,
-  maxTokens: 1024,
-});
 
 export const SUMMARY_SYSTEM = `You are a senior engineering lead writing the top-level summary for a pull request review. Three specialist agents (code correctness, security, performance) have already reviewed this PR and produced findings, which will be posted as separate inline comments. Your job is to summarize the PR itself and synthesize the findings — not to re-review the code.
 
@@ -43,11 +35,12 @@ async function generateSummary(
         .join("\n")
     : "No findings were reported by the code, security, or performance agents.";
 
-  const response = await model.invoke([
-    { role: "system", content: SUMMARY_SYSTEM },
-    {
-      role: "user",
-      content: `Repository: ${meta.owner}/${meta.repo}
+  const response = await invokeWithFallback(
+    [
+      { role: "system", content: SUMMARY_SYSTEM },
+      {
+        role: "user",
+        content: `Repository: ${meta.owner}/${meta.repo}
 Pull request: #${meta.pullNumber}
 PR title: ${meta.prTitle}
 Changed files:
@@ -55,10 +48,12 @@ ${meta.changedFiles.map((f) => `- ${f}`).join("\n")}
 
 Findings:
 ${findingsList}`,
-    },
-  ]);
+      },
+    ],
+    { temperature: 0.2, maxTokens: 1024, label: "summary-agent" }
+  );
 
-  let text = (response.content as string).trim();
+  let text = response.content.trim();
   text = text.replace(/^```(json)?/i, "").replace(/```$/, "").trim();
 
   try {

@@ -137,7 +137,20 @@ Copy the `.env` template into each app/package (or create the files) with your o
 | `GITHUB_WEBHOOK_SECRET`     | Secret configured on your GitHub App (used to verify webhooks)     |
 | `GITHUB_APP_ID`             | GitHub App ID                                                      |
 | `GITHUB_PRIVATE_KEY_PATH`   | Path to your GitHub App private key (`.pem`)                       |
-| `GROQ_API_KEY`              | Groq API key for the review agents (swap for BYOK provider)        |
+| `GROQ_API_KEY`              | Groq API key for the review agents (primary provider)              |
+| `GEMINI_API_KEY`            | Google Gemini API key (first failover)                             |
+| `OPENAI_API_KEY`            | OpenAI API key (second failover, also any OpenAI-compatible base)  |
+| `LLM_PROVIDER_ORDER`        | Optional failover order, e.g. `gemini,groq,openai` (default: as listed) |
+| `LLM_TIMEOUT_MS`            | Per-provider request timeout before failing over (default `60000`) |
+| `GROQ_MODEL`                | Override the Groq model id                                        |
+| `GEMINI_MODEL`              | Override the Gemini model id (default `gemini-2.5-flash`)          |
+| `OPENAI_MODEL`              | Override the OpenAI model id (default `gpt-4o-mini`)               |
+
+Only the providers whose API key is present are attempted, so a deployment with
+just `GROQ_API_KEY` behaves exactly as before. Each invocation logs which
+provider served it as a single-line JSON record (`component: "llm"`), e.g.
+`{"event":"llm.served","provider":"gemini","attempt":2,"of":3}`, with
+`llm.failover` / `llm.auth_failed` / `llm.exhausted` for the failure path.
 
 **`packages/database/.env`**
 
