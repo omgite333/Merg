@@ -1,5 +1,9 @@
+// First import on purpose: this validates the environment and throws on a bad
+// config, so it must run before Express binds a port, BullMQ opens a
+// connection, or the webhook signature check is ever reached.
+import { env } from "./env";
+
 import express from "express";
-import "dotenv/config";
 import cors from "cors";
 import { Webhooks } from "@octokit/webhooks";
 
@@ -9,7 +13,7 @@ import { prisma } from "@repo/database";
 
 const app = express();
 const webhooks = new Webhooks({
-  secret: process.env.GITHUB_WEBHOOK_SECRET!,
+  secret: env.GITHUB_WEBHOOK_SECRET,
 });
 
 // Restricted, not `cors()` with no args — that reflects any origin. With
@@ -17,7 +21,7 @@ const webhooks = new Webhooks({
 // website read a logged-in user's dashboard data via their browser.
 app.use(
   cors({
-    origin: process.env.WEB_ORIGIN ?? "http://localhost:3000",
+    origin: env.WEB_ORIGIN,
     credentials: true,
   })
 );
@@ -176,7 +180,7 @@ res.sendStatus(200);
 
 });
 
-const PORT = process.env.PORT || 8000;
+const PORT = env.PORT;
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);

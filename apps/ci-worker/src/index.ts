@@ -1,13 +1,15 @@
+// First import on purpose: this validates the environment and throws on a bad
+// config, so it must run before the BullMQ worker starts consuming or the
+// GitHub App is constructed.
+import { env } from "./env";
+
 import { Worker } from "bullmq";
-import "dotenv/config";
 import { prisma } from "@repo/database";
 import { getInstallationOctokit } from "./github";
 import { getFailedJobLogs } from "./logs";
 import { triageFailure } from "./triage";
 
-const connection = process.env.REDIS_URL
-  ? { url: process.env.REDIS_URL }
-  : { host: "127.0.0.1", port: 6379 };
+const connection = { url: env.REDIS_URL };
 
 const worker = new Worker(
   "ci-triage",

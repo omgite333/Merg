@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
-import "dotenv/config";
+import { env } from "./env";
 
-const connection = { url: process.env.REDIS_URL! };
+const connection = { url: env.REDIS_URL };
 
 export const reviewQueue = new Queue("pr-review", {
   connection,

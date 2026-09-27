@@ -1,5 +1,9 @@
+// First import on purpose: this validates the environment and throws on a bad
+// config, so it must run before the BullMQ worker starts consuming, the
+// GitHub App is constructed, or any review job is processed.
+import { env } from "./env";
+
 import { Worker, Queue } from "bullmq";
-import "dotenv/config";
 import { prisma } from "@repo/database";
 import { getInstallationOctokit } from "./github";
 import { filterReviewableFiles } from "./context/filter";
@@ -20,7 +24,7 @@ import {
 import { startRecoverySweep, type ReviewJobData } from "./recovery";
 import type { Finding } from "./llm";
 
-const connection = { url: process.env.REDIS_URL! };
+const connection = { url: env.REDIS_URL };
 // Must match the queue the server produces onto in apps/server/src/queue.ts.
 const REVIEW_QUEUE = "pr-review";
 

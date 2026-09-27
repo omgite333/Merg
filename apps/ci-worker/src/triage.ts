@@ -1,10 +1,10 @@
 import { ChatGroq } from "@langchain/groq";
-import "dotenv/config";
+import { env } from "./env";
 import type { FailedJob } from "./logs";
 import { invokeWithRetry } from "./rateLimit";
 
 const model = new ChatGroq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: env.GROQ_API_KEY,
   model: "openai/gpt-oss-120b",
   temperature: 0,
   maxTokens: 1024,

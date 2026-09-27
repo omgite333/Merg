@@ -3,8 +3,11 @@ import { ChatGroq } from "@langchain/groq";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOpenAI } from "@langchain/openai";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { env } from "./env";
+import type { LlmApiKeyName, LlmModelName, LlmProviderId } from "./schema/env.schema";
 
-export type ProviderId = "groq" | "gemini" | "openai";
+/** Derived from the validated env module so the chain and the config agree. */
+export type ProviderId = LlmProviderId;
 
 export interface LlmOptions {
   temperature: number;
@@ -39,8 +42,8 @@ export class AllProvidersFailedError extends Error {
 
 interface ProviderSpec {
   id: ProviderId;
-  apiKeyEnv: string;
-  modelEnv: string;
+  apiKeyEnv: LlmApiKeyName;
+  modelEnv: LlmModelName;
   defaultModel: string;
   build: (args: { apiKey: string; model: string; temperature: number; maxTokens: number }) => BaseChatModel;
 }
@@ -87,7 +90,7 @@ function log(entry: Record<string, unknown>): void {
 }
 
 function resolveOrder(): ProviderSpec[] {
-  const override = process.env.LLM_PROVIDER_ORDER?.trim();
+  const override = env.LLM_PROVIDER_ORDER?.trim();
   if (!override) return PROVIDERS;
   const wanted = override
     .split(",")
@@ -104,7 +107,7 @@ function resolveOrder(): ProviderSpec[] {
  * fallback never costs a round trip.
  */
 export function availableProviders(): ProviderSpec[] {
-  return resolveOrder().filter((spec) => Boolean(process.env[spec.apiKeyEnv]));
+  return resolveOrder().filter((spec) => Boolean(env[spec.apiKeyEnv]));
 }
 
 function statusOf(error: any): number | undefined {
@@ -200,7 +203,7 @@ export async function runChain(
     try {
       const response = await withTimeout(
         Promise.resolve().then(() => entry.invoke(messages)),
-        Number(process.env.LLM_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS,
+        env.LLM_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS,
         entry.id
       );
       const durationMs = Date.now() - attemptStartedAt;
@@ -299,14 +302,13 @@ export async function invokeWithFallback(
   }
 
   const chain = specs.map((spec) => {
-    const model =
-      process.env[spec.modelEnv]?.trim() || spec.defaultModel;
+    const model = env[spec.modelEnv]?.trim() || spec.defaultModel;
     return {
       id: spec.id,
       model,
       invoke: (messages: any[]) =>
         clientFor(spec, {
-          apiKey: process.env[spec.apiKeyEnv]!,
+          apiKey: env[spec.apiKeyEnv]!,
           model,
           temperature: options.temperature,
           maxTokens: options.maxTokens,

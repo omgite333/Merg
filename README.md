@@ -146,30 +146,76 @@ bun install
 
 Copy the `.env` template into each app/package (or create the files) with your own values. **Never commit real secrets.**
 
-**`apps/server/.env`, `apps/worker/.env`**
+Each service validates its own environment **once, at boot**, against a zod
+schema, and every other module imports the typed result instead of reading
+`process.env`:
+
+```
+apps/server/src/env.ts         ->  schema in apps/server/src/schema/env.schema.ts
+apps/worker/src/env.ts         ->  schema in apps/worker/src/schema/env.schema.ts
+apps/ci-worker/src/env.ts      ->  schema in apps/ci-worker/src/schema/env.schema.ts
+```
+
+A missing or malformed value stops the process immediately with every problem
+listed at once, instead of surfacing on whichever request first reaches the code
+path that needed it:
+
+```
+error: Invalid environment for apps/worker:
+  - GITHUB_APP_ID: required — GitHub App > Settings > App ID
+  - REDIS_URL: must be a redis:// or rediss:// URL
+```
+
+There are no `process.env.X!` assertions left in the three services. The
+`.env.example` files match the schemas, so they document what is required
+versus optional.
+
+`DATABASE_URL` also needs to be set in every app's `.env`, but is intentionally
+absent from the schemas above: it is read by Prisma from
+`packages/database/prisma/schema.prisma` (`env("DATABASE_URL")`), not by
+application code.
+
+**`apps/server/.env`**
 
 | Variable                    | Description                                                       |
 | --------------------------- | ----------------------------------------------------------------- |
-| `PORT`                      | HTTP port for the server (default `8000`)                          |
-| `REDIS_URL`                 | Redis connection URL (BullMQ)                                      |
-| `DATABASE_URL`              | PostgreSQL connection string                                       |
-| `GITHUB_WEBHOOK_SECRET`     | Secret configured on your GitHub App (used to verify webhooks)     |
-| `GITHUB_APP_ID`             | GitHub App ID                                                      |
-| `GITHUB_PRIVATE_KEY_PATH`   | Path to your GitHub App private key (`.pem`)                       |
-| `GROQ_API_KEY`              | Groq API key for the review agents (primary provider)              |
+| `GITHUB_WEBHOOK_SECRET`     | **Required.** Secret on your GitHub App, used to verify webhooks   |
+| `AUTH_JWT_SECRET`           | **Required**, ≥16 chars. Must match `apps/web/.env`'s value        |
+| `REDIS_URL`                 | **Required.** Redis connection URL (BullMQ producer)               |
+| `WEB_ORIGIN`                | Origin allowed to send credentialed requests (default `http://localhost:3000`) |
+| `PORT`                      | HTTP port (default `8000`)                                         |
+
+**`apps/worker/.env`, `apps/ci-worker/.env`**
+
+| Variable                    | Description                                                       |
+| --------------------------- | ----------------------------------------------------------------- |
+| `GITHUB_APP_ID`             | **Required.** GitHub App ID                                        |
+| `GITHUB_PRIVATE_KEY_PATH`   | **Required.** Path to your GitHub App private key (`.pem`)         |
+| `REDIS_URL`                 | **Required.** Redis connection URL (BullMQ consumer)               |
+| `GROQ_API_KEY`              | **Required** for `ci-worker`; one-of for `worker` (see below)      |
+
+The review worker additionally accepts optional failover and tuning variables:
+
+| Variable                    | Description                                                       |
+| --------------------------- | ----------------------------------------------------------------- |
 | `GEMINI_API_KEY`            | Google Gemini API key (first failover)                             |
 | `OPENAI_API_KEY`            | OpenAI API key (second failover, also any OpenAI-compatible base)  |
-| `LLM_PROVIDER_ORDER`        | Optional failover order, e.g. `gemini,groq,openai` (default: as listed) |
+| `LLM_PROVIDER_ORDER`        | Failover order, e.g. `gemini,groq,openai` (default: as listed)     |
 | `LLM_TIMEOUT_MS`            | Per-provider request timeout before failing over (default `60000`) |
-| `GROQ_MODEL`                | Override the Groq model id                                        |
+| `GROQ_MODEL`                | Override the Groq model id                                         |
 | `GEMINI_MODEL`              | Override the Gemini model id (default `gemini-2.5-flash`)          |
 | `OPENAI_MODEL`              | Override the OpenAI model id (default `gpt-4o-mini`)               |
 
-Only the providers whose API key is present are attempted, so a deployment with
-just `GROQ_API_KEY` behaves exactly as before. Each invocation logs which
-provider served it as a single-line JSON record (`component: "llm"`), e.g.
-`{"event":"llm.served","provider":"gemini","attempt":2,"of":3}`, with
-`llm.failover` / `llm.auth_failed` / `llm.exhausted` for the failure path.
+**At least one** of `GROQ_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY` must be
+set — that cross-field rule is a `.refine()` on the worker schema. Providers
+whose key is absent are skipped entirely, so a Groq-only deployment behaves
+exactly as before. Setting a key to blank is rejected (omit the line instead),
+and `LLM_PROVIDER_ORDER` is validated against the known provider ids so a typo
+like `gemni` fails at boot rather than leaving an empty chain.
+
+Each invocation logs which provider served it as a single-line JSON record
+(`component: "llm"`), e.g. `{"event":"llm.served","provider":"gemini","attempt":2,"of":3}`,
+with `llm.failover` / `llm.auth_failed` / `llm.exhausted` for the failure path.
 
 **`packages/database/.env`**
 

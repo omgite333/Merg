@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { parse } from "cookie";
 import { prisma } from "@repo/database";
+import { env } from "../env";
 import { ApiError } from "../types/api";
 
 const SESSION_COOKIE = "merg_session";
@@ -20,12 +21,6 @@ declare global {
   }
 }
 
-function getSecret(): string {
-  const secret = process.env.AUTH_JWT_SECRET;
-  if (!secret) throw new Error("AUTH_JWT_SECRET is not set");
-  return secret;
-}
-
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const cookies = parse(req.headers.cookie ?? "");
   const token = cookies[SESSION_COOKIE];
@@ -36,7 +31,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
   let payload: SessionPayload;
   try {
-    payload = jwt.verify(token, getSecret()) as SessionPayload;
+    payload = jwt.verify(token, env.AUTH_JWT_SECRET) as SessionPayload;
   } catch {
     return res.status(401).json({ success: false, error: "INVALID_SESSION" });
   }

@@ -157,6 +157,15 @@ mock.module("jsonwebtoken", () => ({
   default: { verify: () => ({ userId: USER.id, login: USER.login }) },
 }));
 
+// Pinned before the import below, because importing ./api reaches middleware/auth
+// -> ../env, which validates at module load. Setting these here keeps the suite
+// hermetic: it must not depend on what happens to be in the developer's .env.
+Object.assign(process.env, {
+  GITHUB_WEBHOOK_SECRET: "whsec_test",
+  AUTH_JWT_SECRET: "a".repeat(32),
+  REDIS_URL: "redis://localhost:6379",
+});
+
 const { apiRouter } = await import("./api");
 
 let server: Server;
